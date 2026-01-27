@@ -1,7 +1,12 @@
 import { Test } from "./components/Test";
+import { TestAuth } from "./components/TestAuth";
 
 function App() {
-  return <Test />;
+  return (
+    <>
+      <TestAuth />
+    </>
+  );
 }
 
 export default App;
