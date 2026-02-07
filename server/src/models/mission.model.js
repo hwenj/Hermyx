@@ -74,7 +74,8 @@ const finalizeRefund = async (mid, refundId) => {
 };
 
 const createMission = async (missionDate) => {
-  const { title, description, vacancies, reward, status, ownerId } = missionDate;
+  const { title, description, vacancies, reward, status, ownerId } =
+    missionDate;
 
   const query = `
     INSERT INTO mission (title, description, vacancies, monetary_reward, status, owner_id)

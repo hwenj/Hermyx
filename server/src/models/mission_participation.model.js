@@ -1,6 +1,5 @@
 const pool = require("../config/db.config");
 
-//Records that a specific adventurer has been paid.
 const updateTransferInfo = async (mid, uid, transferId, amount) => {
   const query = `
     UPDATE mission_participation 
@@ -10,4 +9,12 @@ const updateTransferInfo = async (mid, uid, transferId, amount) => {
   await pool.query(query, [transferId, amount, mid, uid]);
 };
 
-module.exports = { updateTransferInfo };
+const addParticipant = async (mid, adventurerId) => {
+  const query = `
+    INSERT INTO mission_participation (mid, adventurer_id) 
+    VALUES ($1, $2)
+  `;
+  await pool.query(query, [mid, adventurerId]);
+};
+
+module.exports = { updateTransferInfo, addParticipant };
