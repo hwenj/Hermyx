@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword, deleteUser } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import api from '../config/api';
 import { signUpClientSchema } from '@hermyx/shared';
+import { messages } from '@hermyx/shared';
 
 export function SignUp() {
   // Initial state for the React Hook useStateAction
@@ -23,7 +24,7 @@ export function SignUp() {
       throw {
         controlledError: true,
         errors: {
-          general: [`User with email ${fieldsData.email} already exists.`],
+          general: [messages.EMAIL_ALREADY_EXISTS(fieldsData.email)],
         },
       };
     // If there is a request error, it shows it
@@ -50,7 +51,7 @@ export function SignUp() {
       throw {
         controlledError: true,
         errors: {
-          general: [`Username ${fieldsData.username} already in use.`],
+          general: [messages.USERNAME_ALREADY_EXISTS(fieldsData.username)],
         },
       };
     // If there is a request error, it shows it
@@ -76,37 +77,37 @@ export function SignUp() {
       if (!userCredential)
         throw {
           controlledError: true,
-          errors: { general: [`Could not create new account.`] },
+          errors: { general: [messages.COULD_NOT_CREATE_NEW_ACCOUNT] },
         };
       return userCredential;
     } catch (error) {
-      let message = 'Could not create new account';
+      let message = messages.COULD_NOT_CREATE_NEW_ACCOUNT;
       let field = 'general';
-      console.log(error.code);
+
       // Firebase errors and exceptions are treated
       switch (error.code) {
         case 'auth/email-already-in-use':
-          message = `User with email ${fieldsData.email} already exists.`;
+          message = messages.EMAIL_ALREADY_EXISTS(fieldsData.email);
           field = 'email';
           break;
 
         case 'auth/invalid-email':
-          message = 'Please, enter a valid email.';
+          message = messages.FIELD_NOT_VALID('email');
           field = 'email';
           break;
 
         case 'auth/weak-password':
-          message = 'Please, enter a valid password.';
+          message = messages.FIELD_NOT_VALID('password');
           field = 'password';
           break;
 
         case 'auth/missing-password':
-          message = 'Please, enter a password.';
+          message = messages.FIELD_REQUIRED;
           field = 'password';
           break;
 
         case 'auth/network-request-failed':
-          message = 'Connection error, please check your network.';
+          message = messages.CONNECTION_ERROR;
           break;
       }
 
@@ -146,7 +147,7 @@ export function SignUp() {
 
       throw {
         controlledError: true,
-        errors: { general: [`Could not create new account.`] },
+        errors: data.errors,
       };
     }
   }
@@ -190,7 +191,9 @@ export function SignUp() {
 
       // Any other error
       const errorMessage =
-        error.response?.data?.message || error.message || 'Unexpected error';
+        error.response?.data?.message ||
+        error.message ||
+        messages.UNEXPECTED_ERROR;
       return {
         success: false,
         errors: { general: [errorMessage] },
