@@ -32,7 +32,7 @@ export const validateParamsSchema = (schema) => (req, res, next) => {
   }
 
   // Data is sanitize
-  req.body = result.data;
+  req.params = result.data;
 
   // Successful validation
   next();
@@ -51,7 +51,7 @@ export const validateQuerySchema = (schema) => (req, res, next) => {
   }
 
   // Data is sanitize
-  req.body = result.data;
+  req.query = result.data;
 
   // Successful validation
   next();

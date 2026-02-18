@@ -10,43 +10,13 @@ import {
   getParticipantsForRelease,
 } from '../models/mission.model';
 
-//Check that these fields are not empty
-const validateMission = (title, description, vacancies, reward) => {
-  if (
-    !title ||
-    title.trim().length === 0 ||
-    !description ||
-    description.trim().length === 0 ||
-    vacancies === '' ||
-    vacancies === null ||
-    vacancies === undefined ||
-    reward === '' ||
-    reward === null ||
-    reward === undefined
-  ) {
-    return 'Missing required fields';
-  }
-
-  if (vacancies < 0 || reward < 0) {
-    return 'Vacancies and reward must be non-negative';
-  }
-};
-
 /*Check whether the user wants to save the creation or create a new mission. 
 Depending on that, the fields are checked or not, and the status is updated accordingly.*/
-const createMission = async (req, res) => {
+export const createMission = async (req, res) => {
   try {
     const { uid } = req.user;
 
     const { title, description, vacancies, reward, isDraft } = req.body;
-
-    if (!isDraft) {
-      const error = validateMission(title, description, vacancies, reward);
-
-      if (error) {
-        return res.status(400).json({ error });
-      }
-    }
 
     const missionData = {
       title: title || 'Mission not titled',
@@ -59,16 +29,16 @@ const createMission = async (req, res) => {
 
     const newMission = await _createMission(missionData);
 
-    res
+    return res
       .status(201)
       .json({ data: newMission, message: 'Mission created successfully' });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'Error creating mission' });
+    return res.status(500).json({ error: 'Error creating mission' });
   }
 };
 
-const getAllMissions = async (req, res) => {
+export const getAllMissions = async (req, res) => {
   try {
     const missions = await _getAllMissions();
     res
@@ -80,7 +50,7 @@ const getAllMissions = async (req, res) => {
   }
 };
 
-const getAllMissionsInDraft = async (req, res) => {
+export const getAllMissionsInDraft = async (req, res) => {
   try {
     const missions = await _getAllMissionsInDraft();
     res
@@ -92,7 +62,7 @@ const getAllMissionsInDraft = async (req, res) => {
   }
 };
 
-const getMissionById = async (req, res) => {
+export const getMissionById = async (req, res) => {
   try {
     const { missionId } = req.params;
     const mission = await _getMissionById(missionId);
@@ -109,23 +79,17 @@ const getMissionById = async (req, res) => {
   }
 };
 
-const updateMission = async (req, res) => {
+export const updateMission = async (req, res) => {
   try {
     const { missionId } = req.params;
     const { title, description, vacancies, reward, isDraft } = req.body;
-
-    if (!isDraft) {
-      const error = validateMission(title, description, vacancies, reward);
-      if (error) {
-        return res.status(400).json({ error });
-      }
-    }
 
     const updateData = {
       title: title || 'Mission not titled',
       description: description || '',
       vacancies: vacancies || 0,
       reward: reward || 0,
+      status: isDraft ? 'draft' : 'pending_payment',
     };
 
     const updatedMission = await _updateMission(missionId, updateData);
@@ -133,18 +97,18 @@ const updateMission = async (req, res) => {
     if (!updatedMission) {
       return res.status(404).json({ error: 'Mission not found' });
     } else {
-      res.status(200).json({
+      return res.status(200).json({
         data: updatedMission,
         message: 'Mission updated successfully',
       });
     }
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'Error updating mission' });
+    return res.status(500).json({ error: 'Error updating mission' });
   }
 };
 
-const deleteMission = async (req, res) => {
+export const deleteMission = async (req, res) => {
   try {
     const { missionId } = req.params;
     const deletedMission = await _deleteMission(missionId);
@@ -163,7 +127,7 @@ const deleteMission = async (req, res) => {
 };
 
 /*Verify that the owner of the mission is the one deleting it and that at least one person is assigned to close the mission.*/
-const close = async (req, res) => {
+export const close = async (req, res) => {
   const { missionId } = req.params;
   const userId = req.user.uid;
 
@@ -199,14 +163,4 @@ const close = async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: 'Error interno' });
   }
-};
-
-export default {
-  createMission,
-  getAllMissions,
-  getAllMissionsInDraft,
-  getMissionById,
-  updateMission,
-  deleteMission,
-  close,
 };

@@ -7,7 +7,7 @@ import missionModel from '../models/mission.model';
 import { addParticipant } from '../models/mission_participation.model';
 
 //Receives missionId, senderId and receiverId, prepares the data, and create it in the model.
-const createInvitation = async (req, res) => {
+export const createInvitation = async (req, res) => {
   const { missionId, senderId, receiverId } = req.body;
 
   if (senderId === receiverId) {
@@ -32,7 +32,7 @@ const createInvitation = async (req, res) => {
 
 /*Receive invitationId and the response (accepted or rejected). The invitation must exist, the recipient must be logged in, and the mission must be pending. 
 If rejected, simply update the status. If not, check that there is a vacancy. If there is, add it to the list and update the status of the invitation.*/
-const respondToInvitation = async (req, res) => {
+export const respondToInvitation = async (req, res) => {
   const { invitationId } = req.params;
   const { response } = req.body;
 
@@ -88,9 +88,4 @@ const respondToInvitation = async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: 'Error processing the request' });
   }
-};
-
-export default {
-  createInvitation,
-  respondToInvitation,
 };
