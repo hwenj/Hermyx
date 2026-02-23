@@ -32,8 +32,12 @@ export const validateParamsSchema = (schema) => (req, res, next) => {
   }
 
   // Data is sanitize
-  req.params = result.data;
-
+  Object.defineProperty(req, 'params', {
+    value: result.data,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
   // Successful validation
   next();
 };
@@ -51,7 +55,12 @@ export const validateQuerySchema = (schema) => (req, res, next) => {
   }
 
   // Data is sanitize
-  req.query = result.data;
+  Object.defineProperty(req, 'query', {
+    value: result.data,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
 
   // Successful validation
   next();
