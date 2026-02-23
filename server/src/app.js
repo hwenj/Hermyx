@@ -1,4 +1,4 @@
-// To load environment variabless
+// To load environment variables
 import 'dotenv/config';
 
 // External modules
