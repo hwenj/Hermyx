@@ -20,8 +20,8 @@ function App() {
         throw new Error('Error al conectar con el servidor');
       }
 
-      const data = await response.json();
-      setUsers(data.users || []);
+      const respuestaJson = await response.json();
+      setUsers(respuestaJson.data || []);
     } catch (err) {
       setError(err.message);
     } finally {
