@@ -1,71 +1,18 @@
 import { useActionState, useEffect } from 'react';
-import api from '../config/api';
-import { signUpSchema } from '@hermyx/shared';
-import { messages } from '@hermyx/shared';
 import { useNavigate } from 'react-router-dom';
+import { signUpAction } from '../actions/AuthActions';
+import { initialStateUseStateAction } from '../consts/consts';
 
-// Initial state for the React Hook useStateAction
-const initialState = { success: null, errors: {} };
-
-// Action executed when form is sent
-const signUpAction = async (previousState, formData) => {
-  // Data is collected
-  const fieldsData = Object.fromEntries(formData);
-
-  // Fields validation
-  const validatedFields = signUpSchema.safeParse(fieldsData);
-
-  if (!validatedFields.success) {
-    return {
-      success: false,
-      errors: validatedFields.error.flatten().fieldErrors,
-      data: fieldsData,
-    };
-  }
-
-  // API call
-  try {
-    await api.post('/users', fieldsData);
-
-    // Success
-    return { success: true, data: null, errors: {} };
-  } catch (error) {
-    // If it some controlled error found in server
-    if (
-      [400, 500].includes(error.response?.status) &&
-      error.response.data?.errors
-    )
-      return {
-        success: false,
-        errors: error.response.data.errors,
-        data: fieldsData,
-      };
-
-    // Any other error
-    const errorMessage =
-      error.response?.data?.message || messages.UNEXPECTED_ERROR;
-
-    return {
-      success: false,
-      errors: { general: [errorMessage] },
-      data: fieldsData,
-    };
-  }
-};
-
-export function SignUp() {
+export const SignUp = () => {
   const navigate = useNavigate();
-
   const [state, signUpFormAction, isPending] = useActionState(
     signUpAction,
-    initialState,
+    initialStateUseStateAction,
   );
 
   // Effect for navigating to login
   useEffect(() => {
-    if (state.success) {
-      navigate('/login');
-    }
+    if (state.success) navigate('/login');
   }, [state.success, navigate]);
 
   return (
@@ -122,4 +69,4 @@ export function SignUp() {
       </button>
     </form>
   );
-}
+};

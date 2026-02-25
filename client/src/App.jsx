@@ -38,7 +38,7 @@ function App() {
 
       {/* Missions */}
       <Route
-        path='/mission/:id'
+        path='/missions/:id'
         element={
           <ProtectedRoute>
             <Mission />

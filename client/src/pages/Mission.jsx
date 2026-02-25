@@ -1,16 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import api from '../config/api';
-
-// Function to call the API
-const getMission = async (id) => {
-  const { data } = await api.get(`/missions/${id}`);
-  return data.mission;
-};
+import { getMissionByIdQueryOptions } from './../queries/MissionsQueries';
 
 export const Mission = () => {
   // Mission id
   const { id } = useParams();
+
+  // Query options
+  const enabledOption = !!id;
+  const retryOption = (failureCount, error) => {
+    if (error.response?.status === 404) return false;
+    return failureCount < 3;
+  };
 
   // API call using React Query (if the same query is used in more than one componente it should be isolated)
   const {
@@ -18,19 +19,12 @@ export const Mission = () => {
     isLoading,
     isError,
     error,
-  } = useQuery({
-    queryKey: ['getMission', id],
-    queryFn: () => getMission(id),
-
-    // Query is only executed if there truly is an id
-    enable: !!id,
-
-    // Refetching three times only when needed
-    retry: (failureCount, error) => {
-      if (error.response?.status === 404) return false;
-      return failureCount < 3;
-    },
-  });
+  } = useQuery(
+    getMissionByIdQueryOptions(id, {
+      enabled: enabledOption,
+      retry: retryOption,
+    }),
+  );
 
   // Early returns for each state
   if (isLoading) return <p>Seeking mission...</p>;

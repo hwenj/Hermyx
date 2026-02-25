@@ -1,5 +1,5 @@
 // External modules
-import { messages } from '@hermyx/shared';
+import { messages, consts } from '@hermyx/shared';
 import { getByEmail, getByUsername, create } from '../models/app_user.model.js';
 import firebaseAdmin from '../config/firebase.config.js';
 
@@ -76,39 +76,18 @@ export const signUp = async (req, res) => {
         });
     } catch (error) {
       // Firebase errors and exceptions are treated
-      switch (error.code) {
-        case 'auth/email-already-exists':
-        case 'auth/email-already-in-use':
-          return res.status(400).json({
-            errors: { email: [messages.EMAIL_ALREADY_EXISTS(email)] },
-          });
-
-        case 'auth/invalid-email':
-          return res.status(400).json({
-            errors: { email: [messages.FIELD_NOT_VALID('email')] },
-          });
-
-        case 'auth/invalid-password':
-        case 'auth/weak-password':
-          return res.status(400).json({
-            errors: { password: [messages.FIELD_NOT_VALID('password')] },
-          });
-
-        case 'auth/missing-password':
-          return res.status(400).json({
-            errors: { password: [messages.FIELD_REQUIRED] },
-          });
-
-        case 'auth/network-request-failed':
-          return res.status(502).json({
-            errors: { general: [messages.CONNECTION_ERROR] },
-          });
-
-        default:
-          throw error;
+      const errorBuilder = consts.FIREBASE_ERRORS[error.code];
+      if (errorBuilder) {
+        const mappedError = errorBuilder({ email });
+        return res.status(mappedError.status).json({
+          errors: { [mappedError.field]: [mappedError.message] },
+        });
       }
-    }
 
+      return res.status(500).json({
+        errors: { general: [messages.UNEXPECTED_ERROR] },
+      });
+    }
     try {
       // Creates user in Hermyx DB
       const user = await create(email, username, firebaseUser.uid);
