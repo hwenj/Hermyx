@@ -3,6 +3,59 @@ import { messages } from '@hermyx/shared';
 import { createUser, getUserByUsername } from '../services/UsersServices';
 import { firebaseSignIn } from '../services/AuthServices';
 
+// Sign up action, executed when form is sent
+export const signUpAction = async (previousState, formData) => {
+  // Data is collected
+  const fieldsData = Object.fromEntries(formData);
+
+  // Fields validation
+  const validatedFields = signUpSchema.safeParse(fieldsData);
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      errors: validatedFields.error.flatten().fieldErrors,
+      data: fieldsData,
+    };
+  }
+
+  // API call
+  try {
+    const success = await createUser(fieldsData);
+
+    if (!success)
+      throw {
+        errors: {
+          general: [messages.COULD_NOT_CREATE_NEW_ACCOUNT],
+        },
+      };
+
+    // Success
+    return { success: true, data: null, errors: {} };
+  } catch (error) {
+    // If it some controlled error found in server
+    if (
+      [400, 500].includes(error.response?.status) &&
+      error.response.data?.errors
+    )
+      return {
+        success: false,
+        errors: error.response.data.errors,
+        data: fieldsData,
+      };
+
+    // Any other error
+    const errorMessage =
+      error.response?.data?.message || messages.UNEXPECTED_ERROR;
+
+    return {
+      success: false,
+      errors: { general: [errorMessage] },
+      data: fieldsData,
+    };
+  }
+};
+
 // Log in action, executed when form is sent
 export const logInAction = async (previousState, formData) => {
   // Data is collected
@@ -60,59 +113,6 @@ export const logInAction = async (previousState, formData) => {
       return {
         success: false,
         errors: error.errors,
-        data: fieldsData,
-      };
-
-    // Any other error
-    const errorMessage =
-      error.response?.data?.message || messages.UNEXPECTED_ERROR;
-
-    return {
-      success: false,
-      errors: { general: [errorMessage] },
-      data: fieldsData,
-    };
-  }
-};
-
-// Sign up action, executed when form is sent
-export const signUpAction = async (previousState, formData) => {
-  // Data is collected
-  const fieldsData = Object.fromEntries(formData);
-
-  // Fields validation
-  const validatedFields = signUpSchema.safeParse(fieldsData);
-
-  if (!validatedFields.success) {
-    return {
-      success: false,
-      errors: validatedFields.error.flatten().fieldErrors,
-      data: fieldsData,
-    };
-  }
-
-  // API call
-  try {
-    const success = createUser(fieldsData);
-
-    if (!success)
-      throw {
-        errors: {
-          general: [messages.COULD_NOT_CREATE_NEW_ACCOUNT],
-        },
-      };
-
-    // Success
-    return { success: true, data: null, errors: {} };
-  } catch (error) {
-    // If it some controlled error found in server
-    if (
-      [400, 500].includes(error.response?.status) &&
-      error.response.data?.errors
-    )
-      return {
-        success: false,
-        errors: error.response.data.errors,
         data: fieldsData,
       };
 
