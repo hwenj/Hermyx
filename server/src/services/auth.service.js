@@ -21,3 +21,7 @@ export const createFirebaseUser = async (user) => {
 export const deleteFirebaseUser = async (uid) => {
   await firebaseAdmin.auth().deleteUser(uid);
 };
+
+export const verifyIdToken = async (token) => {
+  return await firebaseAdmin.auth().verifyIdToken(token);
+};

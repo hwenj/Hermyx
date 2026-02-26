@@ -21,34 +21,29 @@ export const updateStripeConnected = async (uid, stripeConnectedId) => {
 
 //Get the user by their email
 export const getByEmail = async (email) => {
-  try {
-    const query = 'SELECT * FROM app_user WHERE email = $1';
-    const result = await pool.query(query, [email]);
-    return result.rows[0];
-  } catch (e) {
-    throw e;
-  }
+  const query = 'SELECT * FROM app_user WHERE email = $1';
+  const result = await pool.query(query, [email]);
+  return result.rows[0];
 };
 
 // Get user by username
 export const getByUsername = async (username) => {
-  try {
-    const query = 'SELECT * FROM app_user WHERE username = $1';
-    const result = await pool.query(query, [username]);
-    return result.rows[0];
-  } catch (e) {
-    throw e;
-  }
+  const query = 'SELECT * FROM app_user WHERE username = $1';
+  const result = await pool.query(query, [username]);
+  return result.rows[0];
 };
 
 // Creates new user
 export const create = async (email, username, firebaseUid) => {
-  try {
-    const query =
-      'INSERT INTO app_user(email, username, firebase_uid) VALUES($1, $2, $3) RETURNING *';
-    const result = await pool.query(query, [email, username, firebaseUid]);
-    return result.rows[0];
-  } catch (e) {
-    throw e;
-  }
+  const query =
+    'INSERT INTO app_user(email, username, firebase_uid) VALUES($1, $2, $3) RETURNING *';
+  const result = await pool.query(query, [email, username, firebaseUid]);
+  return result.rows[0];
+};
+
+// Get user by Firebase ID
+export const getByFirebaseUid = async (firebaseUid) => {
+  const query = 'SELECT * FROM app_user WHERE firebase_uid = $1';
+  const result = await pool.query(query, [firebaseUid]);
+  return result.rows[0];
 };

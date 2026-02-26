@@ -8,7 +8,9 @@ export const messages = {
   FIELD_TOO_SHORT: (field, min) =>
     `${field} must be longer than ${min} characters.`,
   FIELD_REQUIRED: 'This field is required.',
-  UNEXPECTED_ERROR: 'Unexpected error',
+  FORBIDDEN: 'Action is not authorized.',
+  UNAUTHORIZED_ERROR: 'User is not authorized for this action.',
+  UNEXPECTED_ERROR: 'Unexpected error.',
 
   ///// User messages
   //// Sign up
@@ -34,7 +36,7 @@ export const messages = {
   /// Errors
   // Validation errors
   // Server errors
-  INVALID_CREDENTIALS: 'Invalid credentials',
+  INVALID_CREDENTIALS: 'Invalid credentials.',
   PASSWORD_WRONG: 'Wrong password.',
-  COULD_NOT_LOG_IN: 'Could not log im.',
+  COULD_NOT_LOG_IN: 'Could not log in.',
 };

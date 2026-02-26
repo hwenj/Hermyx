@@ -22,6 +22,7 @@ import testRouter from './routes/test.router.js';
 import usersRouter from './routes/users.router.js';
 import paymentRouter from './routes/payment.router.js';
 import missionsRouter from './routes/missions.router.js';
+import { verifyToken } from './middlewares/auth.middleware.js';
 
 app.use((req, res, next) => {
   // Payment test
@@ -64,6 +65,6 @@ app.use((req, res, next) => {
 app.use('/test', testRouter);
 app.use('/stripe', paymentRouter);
 app.use('/api/users', usersRouter);
-app.use('/api/missions', missionsRouter);
+app.use('/api/missions', verifyToken, missionsRouter);
 
 export default app;
