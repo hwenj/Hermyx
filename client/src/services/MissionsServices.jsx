@@ -6,6 +6,29 @@ export const getMissionById = async (id) => {
   return data.mission;
 };
 
+// Finds all missions, it may be paginated
+export const getMissions = async (options) => {
+  const { page, limit } = options ? options : {};
+
+  // Paginated
+  if (page && limit) {
+    // API search
+    const { data } = await api.get('/missions', {
+      params: { page, limit },
+    });
+
+    return data;
+  }
+
+  // Not paginated
+  else {
+    // API search
+    const { data } = await api.get('/missions');
+
+    return data.missions;
+  }
+};
+
 // Create a mission in data base
 export const createMission = async (missionData) => {
   const data = {

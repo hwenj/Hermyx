@@ -13,6 +13,7 @@ import {
 
 import {
   validateBodySchema,
+  validateQuerySchema,
   validateParamsSchema,
 } from '../middlewares/validations.middleware.js';
 
@@ -20,7 +21,13 @@ import {
   publishMissionServerSchema,
   draftMissionServerSchema,
   getMissionSchema,
+  getMissionsQuerySchema,
 } from '@hermyx/shared';
+import { pagination } from '../middlewares/pagination.middleware.js';
+import {
+  countMissions,
+  getAllMissions as _getAllMissions,
+} from './../models/mission.model.js';
 
 //Dynamic middleware to decide which schema to use
 const dynamicValidation = (req, res, next) => {
@@ -35,7 +42,12 @@ const dynamicValidation = (req, res, next) => {
 router.post('/', dynamicValidation, createMission);
 
 //List all missions
-router.get('/', getAllMissions);
+router.get(
+  '/',
+  validateQuerySchema(getMissionsQuerySchema),
+  await pagination(_getAllMissions, countMissions),
+  getAllMissions,
+);
 
 //List all draft missions
 router.get('/in-draft', getAllMissionsInDraft);

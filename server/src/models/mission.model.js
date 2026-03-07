@@ -94,9 +94,16 @@ export const createMission = async (missionData) => {
   return result.rows[0];
 };
 
-export const getAllMissions = async () => {
-  const query = "SELECT * FROM mission WHERE status != 'draft'";
-  const result = await pool.query(query, []);
+export const getAllMissions = async (limit, offset) => {
+  let query, result;
+  if (limit && offset !== undefined) {
+    query =
+      "SELECT * FROM mission WHERE status != 'draft' ORDER BY mid DESC LIMIT $1 OFFSET $2";
+    result = await pool.query(query, [limit, offset]);
+  } else {
+    query = "SELECT * FROM mission WHERE status != 'draft'";
+    result = await pool.query(query, []);
+  }
   return result.rows;
 };
 
@@ -135,4 +142,10 @@ export const deleteMission = async (id) => {
   const query = 'DELETE FROM mission WHERE mid = $1 RETURNING *';
   const result = await pool.query(query, [id]);
   return result.rows[0];
+};
+
+export const countMissions = async () => {
+  const query = 'SELECT COUNT(*) FROM mission';
+  const result = await pool.query(query, []);
+  return parseInt(result.rows[0].count);
 };
