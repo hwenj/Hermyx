@@ -9,7 +9,7 @@ export const Mission = () => {
   // Query options
   const enabledOption = !!id;
   const retryOption = (failureCount, error) => {
-    if (error.response?.status === 404) return false;
+    if (error.response?.status === 404) return false; // So Axios won't try to search again the data if there is none
     return failureCount < 3;
   };
 

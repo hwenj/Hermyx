@@ -1,4 +1,5 @@
 //External modules
+import { messages } from '@hermyx/shared';
 import {
   createMission as _createMission,
   getAllMissions as _getAllMissions,
@@ -42,10 +43,29 @@ export const createMission = async (req, res) => {
 
 export const getAllMissions = async (req, res) => {
   try {
-    const missions = await _getAllMissions();
-    res
-      .status(200)
-      .json({ data: missions, message: 'Missions retrieved successfully' });
+    // Get all missions paginated
+    if (req.query.page && req.query.limit) {
+      if (!res.paginationResults || res.paginationResults.length === 0)
+        return res.status(404).json({
+          errors: { general: [messages.NO_MISSIONS] },
+        });
+
+      return res
+        .status(200)
+        .json({ missions: res.paginationResults, pagination: res.pagination });
+    }
+
+    // Just get all missions
+    else {
+      const missions = await _getAllMissions();
+
+      if (!missions)
+        return res.status(404).json({
+          errors: { general: [messages.NO_MISSIONS] },
+        });
+
+      return res.status(200).json({ missions });
+    }
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Error fetching missions' });

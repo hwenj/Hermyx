@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Mission } from './pages/Mission';
 import { NewMission } from './pages/NewMission';
 import { Payment } from './pages/Payment';
+import { SearchMission } from './pages/SearchMission';
 
 function App() {
   return (
@@ -38,7 +39,7 @@ function App() {
         }
       ></Route>
 
-      {/* New missions */}
+      {/* Missions */}
       <Route
         path='/missions/new'
         element={
@@ -47,7 +48,6 @@ function App() {
           </ProtectedRoute>
         }
       ></Route>
-      {/*Payment path*/}
       <Route
         path='/missions/:id/pay'
         element={
@@ -56,13 +56,19 @@ function App() {
           </ProtectedRoute>
         }
       />
-
-      {/* Missions */}
       <Route
         path='/missions/:id'
         element={
           <ProtectedRoute>
             <Mission />
+          </ProtectedRoute>
+        }
+      ></Route>
+      <Route
+        path='missions'
+        element={
+          <ProtectedRoute>
+            <SearchMission />
           </ProtectedRoute>
         }
       ></Route>

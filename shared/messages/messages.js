@@ -2,7 +2,10 @@ export const messages = {
   ///// Common messages
   //// Error
   CONNECTION_ERROR: 'Connection error, please check your network.',
+  FIELD_INTEGER: (field) => `${field} must be an integer.`,
   FIELD_NOT_VALID: (field) => `Please, enter a valid ${field}.`,
+  FIELD_NUMBER: (field) => `${field} must be a number.`,
+  FIELD_POSITIVE: (field) => `${field} must be positive.`,
   FIELD_TOO_LONG: (field, max) =>
     `${field} must be shorter than ${max} characters.`,
   FIELD_TOO_SHORT: (field, min) =>
@@ -39,4 +42,12 @@ export const messages = {
   INVALID_CREDENTIALS: 'Invalid credentials.',
   PASSWORD_WRONG: 'Wrong password.',
   COULD_NOT_LOG_IN: 'Could not log in.',
+
+  ///// Mission messages
+  //// Get all paginated
+  /// Info
+  NO_MISSIONS: 'There is no missions yet.',
+  /// Errors
+  // Validation errors
+  // Server errors
 };
