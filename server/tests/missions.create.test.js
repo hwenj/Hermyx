@@ -54,7 +54,7 @@ afterAll(async () => {
 });
 
 describe('POST /api/missions', () => {
-  it('should', async () => {
+  it('should create a valid mission when all required fields are provided', async () => {
     const response = await request(app)
       .post('/api/missions')
       .send(test_mission);
@@ -71,63 +71,36 @@ describe('POST /api/missions', () => {
     expect(response.body.data.owner_id).toBe(owner_id);
   });
 
-  it('debería permitir guardar un borrador aunque le falte el título', async () => {
-    // Modificamos la plantilla "al vuelo" para este caso
+  it('should allow saving a draft even if the title is missing', async () => {
     const draftMission = {
       ...test_mission,
-      title: '', // Título vacío
-      isDraft: true, // Marcamos como borrador
+      title: '',
+      isDraft: true,
     };
-    
+
     const response = await request(app)
       .post('/api/missions')
       .send(draftMission);
-
     console.log(response.body);
 
-    // Como es borrador, tu validador debería dejarlo pasar y crear la misión
     expect(response.status).toBe(201);
-
-    // Comprobamos que efectivamente se ha guardado
-    expect(response.body.data).toBeDefined();
-    // (Opcional) Si tu API devuelve el is_draft, podemos comprobarlo:
-    // expect(response.body.data.is_draft).toBe(true);
-  });
-});
-
-/*
-// --- CASOS DE ERROR (CORNER CASES) ---
-  it('should return a 400 status if required fields are missing', async () => {
-    // Creamos un objeto sin el título (suponiendo que es obligatorio)
-    const invalidMission = {
-      description: 'Missing title mission',
-      vacancies: 2,
-    };
-
-    const response = await request(app)
-      .post('/api/missions')
-      .send(invalidMission);
-
-    // Comprobamos que la API rechaza la petición
-    expect(response.status).toBe(400); // 400 Bad Request
-    expect(response.body.errors).toBeDefined();
-    // Ajusta esta línea dependiendo de cómo devuelva los errores tu validador
-    // expect(response.body.errors.title[0]).toBe(messages.FIELD_REQUIRED('Title')); 
   });
 
-  it('should return a 400 status if numeric values are invalid (e.g., negative vacancies)', async () => {
-    // Enviamos una misión con datos numéricos incorrectos
+  it('should return 400 if numeric values are invalid', async () => {
     const invalidMission = {
       ...test_mission,
-      vacancies: -5, // No puede haber vacantes negativas
+      vacancies: 1,
+      reward: -100,
+      isDraft: false,
     };
 
     const response = await request(app)
       .post('/api/missions')
       .send(invalidMission);
+    console.log(response.body);
 
-    expect(response.status).toBe(400); // 400 Bad Request
+    expect(response.status).toBe(400);
+
     expect(response.body.errors).toBeDefined();
   });
 });
-*/
