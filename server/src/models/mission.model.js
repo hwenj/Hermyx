@@ -149,3 +149,25 @@ export const countMissions = async () => {
   const result = await pool.query(query, []);
   return parseInt(result.rows[0].count);
 };
+
+export const getCompletedMission = async (userId) => {
+  const query = `
+    SELECT 
+      m.mid, 
+      m.title, 
+      m.difficulty, 
+      u.username AS requester_name,
+      m.publication_date,
+      m.completion_date,
+      mp.review
+    FROM MISSION m
+    JOIN MISSION_PARTICIPATION mp ON m.mid = mp.mid
+    JOIN APP_USER u ON m.owner_id = u.uid
+    WHERE mp.adventurer_id = $1 
+      AND m.status = 'released'
+    ORDER BY m.publication_date DESC;
+  `;
+
+  const result = await pool.query(query, [userId]);
+  return result.rows;
+};

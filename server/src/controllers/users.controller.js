@@ -1,6 +1,7 @@
 // External modules
 import { messages, consts } from '@hermyx/shared';
 import { getByEmail, getByUsername, create } from '../models/app_user.model.js';
+import { getCompletedMission } from '../models/mission.model.js';
 import {
   createFirebaseUser,
   deleteFirebaseUser,
@@ -42,10 +43,81 @@ export const getUsers = async (req, res) => {
   }
 };
 
+export const getUserPublicProfile = async (req, res) => {
+  try {
+    const username = req.params.username.toLowerCase().trim();
+
+    const user = await getByUsername(username);
+
+    if (!user) {
+      return res.status(404).json({
+        errors: { general: [messages.USERNAME_NOT_FOUND(username)] },
+      });
+    }
+
+    const publicProfile = {
+      username: user.username,
+      name: user.name,
+      surnames: user.surnames,
+      description: user.description,
+      location: user.location,
+      avatar: user.avatar,
+    };
+
+    const missionsHistory = await getCompletedMission(user.uid);
+
+    return res.status(200).json({
+      user: publicProfile,
+      missions: missionsHistory || [],
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      errors: { general: [messages.UNEXPECTED_ERROR] },
+    });
+  }
+};
+
+export const getUserCompletedMissions = async (req, res) => {
+  try {
+    const username = req.params.username.toLowerCase().trim();
+
+    const user = await getByUsername(username);
+
+    if (!user) {
+      return res.status(404).json({
+        errors: { general: [messages.USERNAME_NOT_FOUND(username)] },
+      });
+    }
+
+    const missionsHistory = await getCompletedMission(user.uid);
+
+    if (!missionsHistory || missionsHistory.length === 0) {
+      return res.status(200).json({
+        username: user.username,
+        missions: [],
+        message: 'This user has no completed missions.',
+      });
+    }
+
+    return res.status(200).json({
+      username: user.username,
+      missions: missionsHistory,
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      errors: { general: [messages.UNEXPECTED_ERROR] },
+    });
+  }
+};
+
 export const signUp = async (req, res) => {
   try {
     // Gets new account attributes
-    const { email, username, password } = req.body;
+    const email = req.body.email.toLowerCase().trim();
+    const username = req.body.username.toLowerCase().trim();
+    const { password } = req.body;
 
     // Checks if the email is already in use
     const userByEmail = await getByEmail(email);
