@@ -1,7 +1,11 @@
 // External modules
 import { messages, consts } from '@hermyx/shared';
 import { getByEmail, getByUsername, create } from '../models/app_user.model.js';
-import { getCompletedMission } from '../models/mission.model.js';
+import {
+  getCompletedMission,
+  getActiveMissionsByOwner,
+  getActiveMissionsByAdventurer,
+} from '../models/mission.model.js';
 import {
   createFirebaseUser,
   deleteFirebaseUser,
@@ -109,6 +113,50 @@ export const getUserCompletedMissions = async (req, res) => {
     return res.status(500).json({
       errors: { general: [messages.UNEXPECTED_ERROR] },
     });
+  }
+};
+
+export const getMyProfile = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ errors: { general: [messages.UNAUTHORIZED_ERROR] } });
+    }
+
+    const profile = {
+      username: user.username,
+      name: user.name,
+      surnames: user.surnames,
+      description: user.description,
+      location: user.location,
+      avatar: user.avatar,
+    };
+
+    const [completedMissions, activeAsRequester, activeAsAdventurer] =
+      await Promise.all([
+        getCompletedMission(user.uid),
+        getActiveMissionsByOwner(user.uid),
+        getActiveMissionsByAdventurer(user.uid),
+      ]);
+
+    return res.status(200).json({
+      user: profile,
+      missions: {
+        completed: completedMissions || [],
+        active: {
+          asRequester: activeAsRequester || [],
+          asAdventurer: activeAsAdventurer || [],
+        },
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
   }
 };
 

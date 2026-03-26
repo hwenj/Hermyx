@@ -54,6 +54,7 @@ CREATE TABLE MISSION (
     'refunded',
     'canceled',
     'in_dispute')),
+	completion_date TIMESTAMP,
 	owner_id INT NOT NULL,
 	stripe_pi_id VARCHAR(255),
   stripe_refund_id VARCHAR(255),

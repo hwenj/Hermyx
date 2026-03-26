@@ -6,6 +6,7 @@ import {
   signUp,
   getUserPublicProfile,
   getUserCompletedMissions,
+  getMyProfile,
 } from '../controllers/users.controller.js';
 import {
   validateBodySchema,
@@ -13,8 +14,13 @@ import {
 } from '../middlewares/validations.middleware.js';
 import { getUsersQuerySchema, signUpSchema } from '@hermyx/shared';
 
+import { verifyToken } from '../middlewares/auth.middleware.js';
+
 // Get public profile of a user by username
 router.get('/', validateQuerySchema(getUsersQuerySchema), getUsers);
+
+//Get my profile
+router.get('/me/profile', verifyToken, getMyProfile);
 
 //Get user by username
 router.get('/:username/profile', getUserPublicProfile);
