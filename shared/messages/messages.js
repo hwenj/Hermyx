@@ -50,4 +50,8 @@ export const messages = {
   /// Errors
   // Validation errors
   // Server errors
+
+  //// Account
+  ///Info
+  ACCOUNT_UPDATED_SUCCESSFULLY: 'Account updated successfully.',
 };

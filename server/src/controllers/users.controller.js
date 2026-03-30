@@ -1,6 +1,13 @@
 // External modules
 import { messages, consts } from '@hermyx/shared';
-import { getByEmail, getByUsername, create } from '../models/app_user.model.js';
+import {
+  getByEmail,
+  getByUsername,
+  create,
+  getByUsernameExcludingUid,
+  updateMyAccount as updateMyAccountInDb,
+  updateUserEmail,
+} from '../models/app_user.model.js';
 import {
   getCompletedMission,
   getActiveMissionsByOwner,
@@ -9,7 +16,11 @@ import {
 import {
   createFirebaseUser,
   deleteFirebaseUser,
+  getFirebaseAuthProviders,
+  updateFirebaseEmail,
+  updateFirebasePassword,
 } from '../services/auth.service.js';
+import { listCards as listStripeCards } from '../services/payment.service.js';
 
 export const getUsers = async (req, res) => {
   try {
@@ -224,6 +235,192 @@ export const signUp = async (req, res) => {
     }
   } catch (e) {
     console.error(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+export const updateMyAccount = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res
+        .status(401)
+        .json({ errors: { general: [messages.UNAUTHORIZED_ERROR] } });
+    }
+
+    const username = req.body.username.toLowerCase().trim();
+
+    const existingUsername = await getByUsernameExcludingUid(
+      username,
+      user.uid,
+    );
+    if (existingUsername) {
+      return res.status(400).json({
+        errors: { username: [messages.USERNAME_ALREADY_EXISTS(username)] },
+      });
+    }
+
+    const updatedUser = await updateMyAccountInDb(user.uid, {
+      username,
+      name: req.body.name,
+      surnames: req.body.surnames,
+      location: req.body.location,
+      description: req.body.description,
+    });
+
+    return res.status(200).json({
+      message: messages.ACCOUNT_UPDATED_SUCCESSFULLY,
+      account: {
+        username: updatedUser.username,
+        name: updatedUser.name,
+        surnames: updatedUser.surnames,
+        location: updatedUser.location,
+        description: updatedUser.description,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+export const getMyAccount = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ errors: { general: [messages.UNAUTHORIZED_ERROR] } });
+    }
+
+    const editableDirectFields = [
+      'username',
+      'name',
+      'surnames',
+      'location',
+      'description',
+    ];
+
+    const requiresVerificationFields = [
+      'email',
+      'password',
+      'googleAccount',
+      'paymentMethods',
+    ];
+
+    const authProviders = await getFirebaseAuthProviders(user.firebase_uid);
+
+    let hasSavedPaymentMethods = false;
+    if (user.stripe_customer_id) {
+      try {
+        const cards = await listStripeCards(user.stripe_customer_id);
+        hasSavedPaymentMethods =
+          Array.isArray(cards?.data) && cards.data.length > 0;
+      } catch (err) {
+        console.error('Error checking payment methods:', err);
+      }
+    }
+
+    const requiredFieldsForCurrentUser = ['username'];
+    if (!authProviders.hasGoogleAccountLinked) {
+      requiredFieldsForCurrentUser.push('email', 'password');
+    }
+
+    return res.status(200).json({
+      account: {
+        username: user.username,
+        name: user.name,
+        surnames: user.surnames,
+        location: user.location,
+        description: user.description,
+        email: user.email,
+        googleAccount: user.google_account,
+      },
+      editableDirectFields,
+      requiresVerificationFields,
+      verificationStatus: {
+        hasGoogleAccountLinked: authProviders.hasGoogleAccountLinked,
+        hasEmailPasswordCredential: authProviders.hasEmailPasswordCredential,
+        hasSavedPaymentMethods,
+      },
+      requiredFieldsForCurrentUser,
+      constraints: {
+        usernameMaxLength: consts.USERNAME_MAX_LENGTH,
+        nameMaxLength: consts.NAME_MAX_LENGTH,
+        surnamesMaxLength: consts.SURNAMES_MAX_LENGTH,
+        locationMaxLength: consts.LOCATION_MAX_LENGTH,
+        descriptionMaxLength: consts.DESCRIPTION_MAX_LENGTH,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+export const updateMyAccountCredentials = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res
+        .status(401)
+        .json({ errors: { general: [messages.UNAUTHORIZED_ERROR] } });
+    }
+
+    const { email, newPassword } = req.body;
+    const normalizedEmail = email?.toLowerCase().trim();
+    const currentEmail = user.email?.toLowerCase().trim();
+    const resultingEmail = normalizedEmail || currentEmail;
+    let hasChanges = false;
+
+    if (newPassword && !resultingEmail) {
+      return res.status(400).json({
+        errors: { email: [messages.FIELD_REQUIRED] },
+      });
+    }
+
+    if (normalizedEmail && normalizedEmail !== currentEmail) {
+      const userByEmail = await getByEmail(normalizedEmail);
+      if (userByEmail && userByEmail.uid !== user.uid) {
+        return res.status(400).json({
+          errors: {
+            email: [messages.EMAIL_ALREADY_EXISTS(normalizedEmail)],
+          },
+        });
+      }
+      await updateFirebaseEmail(user.firebase_uid, normalizedEmail);
+      await updateUserEmail(user.uid, normalizedEmail);
+      hasChanges = true;
+    }
+
+    if (newPassword) {
+      await updateFirebasePassword(user.firebase_uid, newPassword);
+      hasChanges = true;
+    }
+
+    if (!hasChanges) {
+      return res.status(400).json({
+        errors: { general: [messages.FIELD_REQUIRED] },
+      });
+    }
+
+    return res.status(200).json({ message: messages.ACCOUNT_UPDATED_SUCCESSFULLY });
+  } catch (e) {
+    const fb = consts.FIREBASE_ERRORS[e.code];
+
+    if (fb) {
+      const mapped = fb({ email: req.body?.email });
+      return res
+        .status(mapped.status)
+        .json({ errors: { [mapped.field]: [mapped.message] } });
+    }
     return res
       .status(500)
       .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });

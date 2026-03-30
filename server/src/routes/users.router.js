@@ -7,12 +7,20 @@ import {
   getUserPublicProfile,
   getUserCompletedMissions,
   getMyProfile,
+  getMyAccount,
+  updateMyAccount,
+  updateMyAccountCredentials,
 } from '../controllers/users.controller.js';
 import {
   validateBodySchema,
   validateQuerySchema,
 } from '../middlewares/validations.middleware.js';
-import { getUsersQuerySchema, signUpSchema } from '@hermyx/shared';
+import {
+  getUsersQuerySchema,
+  signUpSchema,
+  updateMyAccountSchema,
+  updateMyAccountCredentialsSchema,
+} from '@hermyx/shared';
 
 import { verifyToken } from '../middlewares/auth.middleware.js';
 
@@ -30,5 +38,21 @@ router.get('/:username/completed-missions', getUserCompletedMissions);
 
 // Sign up a new user
 router.post('/', validateBodySchema(signUpSchema), signUp);
+
+router.get('/me/account', verifyToken, getMyAccount);
+
+router.patch(
+  '/me/account',
+  verifyToken,
+  validateBodySchema(updateMyAccountSchema),
+  updateMyAccount,
+);
+
+router.patch(
+  '/me/account/credentials',
+  verifyToken,
+  validateBodySchema(updateMyAccountCredentialsSchema),
+  updateMyAccountCredentials,
+);
 
 export default router;

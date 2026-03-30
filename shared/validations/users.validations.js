@@ -76,3 +76,67 @@ export const logInSchema = z
     message: messages.EMAIL_USERNAME_NOT_PROVIDED,
     path: ['usernameEmail'],
   });
+
+const optionalNullableTrimmedStringSchema = (maxLength, fieldName) =>
+  z.preprocess(
+    (value) => {
+      if (value === undefined || value === null) return null;
+      if (typeof value !== 'string') return value;
+
+      const trimmedValue = value.trim();
+      return trimmedValue.length === 0 ? null : trimmedValue;
+    },
+    z
+      .string()
+      .max(maxLength, messages.FIELD_TOO_LONG(fieldName, maxLength))
+      .nullable(),
+  );
+
+// Server and client account update shared validation
+export const updateMyAccountSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(1, messages.FIELD_REQUIRED)
+    .max(
+      consts.USERNAME_MAX_LENGTH,
+      messages.FIELD_TOO_LONG('Username', consts.USERNAME_MAX_LENGTH),
+    )
+    .regex(regex.USERNAME_REGEX, messages.USERNAME_INVALID_CHARACTERS),
+  name: optionalNullableTrimmedStringSchema(consts.NAME_MAX_LENGTH, 'Name'),
+  surnames: optionalNullableTrimmedStringSchema(
+    consts.SURNAMES_MAX_LENGTH,
+    'Surnames',
+  ),
+  location: optionalNullableTrimmedStringSchema(
+    consts.LOCATION_MAX_LENGTH,
+    'Location',
+  ),
+  description: optionalNullableTrimmedStringSchema(
+    consts.DESCRIPTION_MAX_LENGTH,
+    'Description',
+  ),
+});
+
+export const updateMyAccountCredentialsSchema = z
+  .object({
+    email: z.email(messages.FIELD_NOT_VALID('email')).trim().optional(),
+    newPassword: z
+      .string()
+      .trim()
+      .min(
+        consts.PASSWORD_MIN_LENGTH,
+        messages.FIELD_TOO_SHORT('Password', consts.PASSWORD_MIN_LENGTH),
+      )
+      .max(
+        consts.PASSWORD_MAX_LENGTH,
+        messages.FIELD_TOO_LONG('Password', consts.PASSWORD_MAX_LENGTH),
+      )
+      .regex(regex.PASSWORD_REGEX, messages.FIELD_NOT_VALID('password'))
+      .optional(),
+    confirmNewPassword: z.string().trim().optional(),
+  })
+  .refine((v) => !v.newPassword || v.newPassword === v.confirmNewPassword, {
+    message: messages.PASSWORDS_NOT_MATCH,
+    path: ['confirmNewPassword'],
+  });
