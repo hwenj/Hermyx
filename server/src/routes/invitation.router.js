@@ -6,8 +6,8 @@ import {
   respondToInvitation,
 } from '../controllers/invitation.controller.js';
 
-//Crete invitation
-router.post('/invitation', createInvitation);
+//Create invitation
+router.post('/', createInvitation);
 
 //Respond to invitation
 router.post('/:invitationId/respond', respondToInvitation);

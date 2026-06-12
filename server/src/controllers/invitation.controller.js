@@ -2,9 +2,9 @@ import {
   createInvitation as _createInvitation,
   findByIid,
   updateInvitationStatus,
-} from '../models/invitation.model';
-import missionModel from '../models/mission.model';
-import { addParticipant } from '../models/mission_participation.model';
+} from '../models/invitation.model.js';
+import { getById, getParticipantsForRelease } from '../models/mission.model.js';
+import { addParticipant } from '../models/mission_participation.model.js';
 
 //Receives missionId, senderId and receiverId, prepares the data, and create it in the model.
 export const createInvitation = async (req, res) => {
@@ -15,10 +15,22 @@ export const createInvitation = async (req, res) => {
   }
 
   try {
+    const mission = await getById(missionId);
+
+    if (!mission) {
+      return res.status(404).json({ error: 'Mission not found' });
+    }
+
+    const type =
+      mission.owner_id === senderId
+        ? 'applicant_to_adventurer'
+        : 'adventurer_to_applicant';
+
     const invitationData = {
       missionId,
       senderId,
       receiverId,
+      type,
     };
 
     const newInvitationId = await _createInvitation(invitationData);
@@ -45,7 +57,7 @@ export const respondToInvitation = async (req, res) => {
       return res.status(404).json({ error: 'Invitation not found' });
     }
 
-    if (invitation.receiver_id !== userId) {
+    if (invitation.recipient_id !== userId) {
       return res.status(403).json({
         error: 'You do not have permission to respond to this invitation.',
       });
@@ -60,12 +72,12 @@ export const respondToInvitation = async (req, res) => {
     if (response === 'rejected') {
       await updateInvitationStatus(invitationId, 'rejected');
       return res.status(200).json({ message: 'Invitation rejected' });
-    } else if (response === 'accept') {
+    } else if (response === 'accepted' || response === 'accept') {
       const missionId = invitation.associated_mission_id;
 
       const [mission, participants] = await Promise.all([
-        missionModel.getById(missionId),
-        missionModel.getParticipantsForRelease(missionId),
+        getById(missionId),
+        getParticipantsForRelease(missionId),
       ]);
 
       if (mission.vacancies <= participants.length) {
@@ -74,13 +86,11 @@ export const respondToInvitation = async (req, res) => {
           .json({ error: 'There are no vacancies available' });
       }
 
-      await addParticipant(missionId, invitation.receiver_id);
+      await addParticipant(missionId, invitation.recipient_id);
 
       await updateInvitationStatus(invitationId, 'accepted');
 
-      return res
-        .status(200)
-        .json({ message: 'Adventurer successfully added ' });
+      return res.status(200).json({ message: 'Adventurer successfully added' });
     } else {
       return res.status(400).json({ error: 'Invalid response action' });
     }

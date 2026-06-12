@@ -9,6 +9,7 @@ import {
   deleteMission as _deleteMission,
   getById,
   getParticipantsForRelease,
+  updateStatus as _updateStatus,
 } from '../models/mission.model.js';
 
 /*Check whether the user wants to save the creation or create a new mission. 
@@ -168,7 +169,7 @@ export const close = async (req, res) => {
     if (mission.owner_id !== userId) {
       return res
         .status(403)
-        .json({ error: 'You do not hace permission to close this mission.' });
+        .json({ error: 'You do not have permission to close this mission.' });
     }
 
     const currentParticipants = (await getParticipantsForRelease(missionId))
@@ -180,11 +181,11 @@ export const close = async (req, res) => {
         .json({ error: 'You cannot close a mission without adventurers' });
     }
 
-    await _updateMission(missionId, 'in_progress');
+    await _updateStatus(missionId, 'in_progress');
 
     return res.status(200).json({
       message: 'Mission closed.',
-      status: 'in:progress',
+      status: 'in_progress',
       participants: currentParticipants,
     });
   } catch (error) {
