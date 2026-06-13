@@ -2,6 +2,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signUpAction } from '../actions/AuthActions';
 import { initialStateUseStateAction } from '../consts/consts';
+import { messages } from '../messages/messages';
 import { Button } from '@/components/ui/button';
 import { Form } from '../components/custom/form/Form';
 import { InputFormField } from './../components/custom/form/InputFormField';
@@ -61,7 +62,7 @@ export const SignUp = () => {
           <InputFormField
             id='signUpUsername'
             label='Username (required):'
-            description='No longer than 20 characters. Must start with a letter or number, and may contain [._-].'
+            description={messages.SIGN_UP.USERNAME_DESCRIPTION}
             error={
               !clearedFields.username && state.errors?.username
                 ? state.errors.username[0]
@@ -102,7 +103,7 @@ export const SignUp = () => {
           <PasswordInputFormField
             id='signUpPassword'
             label='Password (required):'
-            description='At least 8 characters. Must include an uppercase, lowercase, number and symbol.'
+            description={messages.SIGN_UP.PASSWORD_DESCRIPTION}
             error={
               !clearedFields.password && state.errors?.password
                 ? state.errors.password[0]

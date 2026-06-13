@@ -1,7 +1,7 @@
 import { useActionState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logInAction } from '../actions/AuthActions';
-import { initialStateUseStateAction } from '../consts/consts';
+import { initialStateUseStateAction } from '../consts/consts.js';
 
 export const LogIn = () => {
   const navigate = useNavigate();
