@@ -7,6 +7,7 @@ import { Form } from '../components/custom/form/Form';
 import { InputFormField } from './../components/custom/form/InputFormField';
 import { AlertForm } from './../components/custom/form/AlertForm';
 import { PasswordInputFormField } from '../components/custom/form/PasswordInputFormField';
+import { messages } from '../messages/messages.js';
 
 export const LogIn = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export const LogIn = () => {
       <div className='flex flex-col w-full max-w-155 gap-4'>
         <Form
           id='logInForm'
-          formTitle='Log in'
+          formTitle={messages.LOG_IN.FORM_TITLE}
           action={logInFormAction}
           legend='Application log in form.'
           footer={

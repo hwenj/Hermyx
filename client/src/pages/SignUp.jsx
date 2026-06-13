@@ -44,7 +44,7 @@ export const SignUp = () => {
       <div className='flex flex-col w-full max-w-155 gap-4'>
         <Form
           id='signUpForm'
-          formTitle='Sign up'
+          formTitle={messages.SIGN_UP.FORM_TITLE}
           action={signUpFormAction}
           legend='Application sign up form.'
           footer={
