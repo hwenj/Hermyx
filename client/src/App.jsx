@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { SignUp } from './pages/SignUp';
 import { LogIn } from './pages/LogIn';
 import { Home } from './pages/Home';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/custom/ProtectedRoute';
 import { Mission } from './pages/Mission';
 import { NewMission } from './pages/NewMission';
 import { Payment } from './pages/Payment';

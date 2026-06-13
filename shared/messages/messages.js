@@ -25,7 +25,7 @@ export const messages = {
   FIREBASE_UID_REQUIRED: 'Firebase UID is required.',
   PASSWORDS_NOT_MATCH: 'Passwords do not match.',
   USERNAME_INVALID_CHARACTERS:
-    'Username must only contain letters, numbers or [._-]. ',
+    'Username must start with a letter or number, and may contain [._-].',
 
   // Server errors
   EMAIL_ALREADY_EXISTS: (email) => `User with email ${email} already exists.`,
