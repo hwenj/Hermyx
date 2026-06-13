@@ -20,6 +20,10 @@ export const messages = {
   /// Info
   /// Errors
   // Validation errors
+  PASSWORD_UPPERCASE: 'Password must include at least one uppercase letter.',
+  PASSWORD_LOWERCASE: 'Password must include at least one lowercase letter.',
+  PASSWORD_NUMBER: 'Password must include at least one number.',
+  PASSWORD_SYMBOL: 'Password must include at least one symbol (e.g., !@#$%_-).',
   CONFIRM_PASSWORD: 'Please, confirm password.',
   EMAIL_USERNAME_NOT_PROVIDED: 'Username or email must be provided.',
   FIREBASE_UID_REQUIRED: 'Firebase UID is required.',

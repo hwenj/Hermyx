@@ -48,7 +48,10 @@ export const signUpSchema = z
         consts.PASSWORD_MAX_LENGTH,
         messages.FIELD_TOO_LONG('Password', consts.PASSWORD_MAX_LENGTH),
       ) // Firebase requirement
-      .regex(regex.PASSWORD_REGEX, messages.FIELD_NOT_VALID('password')),
+      .regex(regex.PASSWORD_UPPERCASE_REGEX, messages.PASSWORD_UPPERCASE)
+      .regex(regex.PASSWORD_LOWERCASE_REGEX, messages.PASSWORD_LOWERCASE)
+      .regex(regex.PASSWORD_NUMBER_REGEX, messages.PASSWORD_NUMBER)
+      .regex(regex.PASSWORD_SYMBOL_REGEX, messages.PASSWORD_SYMBOL),
     confirmPassword: z.string().trim().min(1, messages.CONFIRM_PASSWORD),
   })
   .refine((val) => val.password === val.confirmPassword, {

@@ -40,7 +40,7 @@ export const SignUp = () => {
   };
 
   return (
-    <main className=' flex min-h-screen items-center justify-center p-4'>
+    <main className='flex min-h-screen items-center justify-center p-4'>
       <div className='flex flex-col w-full max-w-155 gap-4'>
         <Form
           id='signUpForm'

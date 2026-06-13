@@ -16,7 +16,10 @@ export const PasswordInputFormField = ({
   error,
   ...props
 }) => {
+  // State for show/hide password icon
   const [showPassword, setShowPassword] = useState(false);
+
+  // Ids for descriptions and errors so the input is described successfully
   const reactId = useId();
   const id = externalId || reactId;
   const descriptionId = `${id}-description`;

@@ -15,6 +15,7 @@ export const InputFormField = ({
   error,
   ...props
 }) => {
+  // Ids for descriptions and errors so the input is described successfully
   const reactId = useId();
   const id = externalId || reactId;
   const descriptionId = `${id}-description`;
