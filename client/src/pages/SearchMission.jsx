@@ -1,6 +1,8 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getMissionsInfiniteQueryOptions } from './../queries/MissionsQueries';
 import { PAGINATION_LIMIT } from '../consts/consts';
+import { MissionSearchCard } from '../components/custom/missions/MissionSearchCard';
+import { Button } from '@/components/ui/button';
 
 export const SearchMission = () => {
   // Query options
@@ -24,33 +26,33 @@ export const SearchMission = () => {
   const missions = data?.pages.flatMap((page) => page.missions);
 
   return (
-    <div className='flex flex-col gap-4'>
-      {missions?.map((mission) => (
-        <div key={mission.mid}>
-          <p>Nombre:{mission.title}</p>
-          <p>Fecha de publicación:</p>
-          <p>Solicitante:{mission.owner_id}</p>
-          <p>Gremios subidos: aún no.</p>
-          <p>Descripción:{mission.description}</p>
-          <p>Dificultad:</p>
-          <p>Vacantes:{mission.vacancies}</p>
-          <p>Geolocalización: aún no.</p>
-          <p>Recompensa monetaria:{mission.monetary_reward}</p>
-          <p>Otras recompensas: aún no.</p>
-          <button>Ponerse en contacto con Solicitante</button>
+    <main>
+      <section className='p-4'>
+        <div
+          className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+          aria-label='Missions list'
+        >
+          {missions?.map((mission) => (
+            <MissionSearchCard
+              key={mission.mid}
+              mission={mission}
+            ></MissionSearchCard>
+          ))}
         </div>
-      ))}
-      <button
-        onClick={() => fetchNextPage()}
-        className='rounded-lg p-2 hover:cursor-pointer'
-        disabled={!hasNextPage || isFetchNextPage}
-      >
-        {hasNextPage
-          ? isFetchNextPage
-            ? 'Loading'
-            : 'More missions'
-          : 'No more missions to show'}
-      </button>
-    </div>
+        <div className='flex align-middle justify-center py-5'>
+          <Button
+            onClick={() => fetchNextPage()}
+            className='rounded-lg p-2 hover:cursor-pointer'
+            disabled={!hasNextPage || isFetchNextPage}
+          >
+            {hasNextPage
+              ? isFetchNextPage
+                ? 'Loading'
+                : 'More missions'
+              : 'No more missions to show'}
+          </Button>
+        </div>
+      </section>
+    </main>
   );
 };
