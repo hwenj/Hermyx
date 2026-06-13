@@ -18,7 +18,7 @@ export const getUsers = async (req, res) => {
       // Returns success or error
       if (!user)
         return res.status(404).json({
-          errors: { general: [messages.EMAIL_NOT_FOUND(email)] },
+          errors: { usernameEmail: [messages.EMAIL_NOT_FOUND(email)] },
         });
 
       return res.status(200).json({ user });
@@ -29,7 +29,7 @@ export const getUsers = async (req, res) => {
       // Returns success or error
       if (!user)
         return res.status(404).json({
-          errors: { general: [messages.USERNAME_NOT_FOUND(username)] },
+          errors: { usernameEmail: [messages.USERNAME_NOT_FOUND(username)] },
         });
 
       return res.status(200).json({ user });
