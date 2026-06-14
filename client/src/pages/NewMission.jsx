@@ -4,10 +4,10 @@ import { createMissionAction } from '../actions/MissionActions';
 import { initialStateUseStateAction } from '../consts/consts';
 import { messages } from '../messages/messages';
 import { Button } from '@/components/ui/button';
-import { Form } from '../components/custom/form/Form';
-import { InputFormField } from './../components/custom/form/InputFormField';
-import { AlertForm } from './../components/custom/form/AlertForm';
-import { TextareaFormField } from '../components/custom/form/TextareaFormField';
+import { Form } from '../components/custom/form/CardForm';
+import { InputFormField } from '../components/custom/form/FormInputField';
+import { AlertForm } from '../components/custom/form/FormAlert';
+import { TextareaFormField } from '../components/custom/form/FormTextareaField';
 
 export const NewMission = () => {
   const navigate = useNavigate();

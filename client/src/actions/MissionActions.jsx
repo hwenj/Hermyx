@@ -1,6 +1,7 @@
 import {
   publishMissionClientSchema,
   draftMissionClientSchema,
+  searchMissionByTitleSchema,
 } from '@hermyx/shared';
 
 import { messages } from '@hermyx/shared';
@@ -86,4 +87,22 @@ export const createMissionAction = async (previousState, formData) => {
       data: fieldsData,
     };
   }
+};
+
+export const searchMissionByTitleAction = async (previousState, formData) => {
+  // Data is collected
+  const fieldsData = Object.fromEntries(formData);
+
+  // Fields validation
+  const validatedFields = searchMissionByTitleSchema.safeParse(fieldsData);
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      errors: validatedFields.error.flatten().fieldErrors,
+      data: fieldsData,
+    };
+  }
+
+  return { success: true, data: fieldsData, errors: {} };
 };

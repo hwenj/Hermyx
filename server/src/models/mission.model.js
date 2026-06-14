@@ -94,16 +94,26 @@ export const createMission = async (missionData) => {
   return result.rows[0];
 };
 
-export const getAllMissions = async (limit, offset) => {
-  let query, result;
-  if (limit && offset !== undefined) {
-    query =
-      "SELECT * FROM mission WHERE status != 'draft' ORDER BY mid DESC LIMIT $1 OFFSET $2";
-    result = await pool.query(query, [limit, offset]);
-  } else {
-    query = "SELECT * FROM mission WHERE status != 'draft'";
-    result = await pool.query(query, []);
+export const getAllMissions = async (limit, offset, title) => {
+  let query =
+    "SELECT m.mid, m.publication_date, m.title, m.description, m.difficulty, m.vacancies, m.monetary_reward, m.status, a.uid, a.username FROM mission AS m JOIN app_user AS a ON (m.owner_id = a.uid) WHERE status != 'draft'";
+  const values = [];
+
+  if (title) {
+    values.push(title);
+    query += ` AND unaccent(title) ILIKE unaccent('%' || $${values.length} || '%')`;
   }
+
+  if (limit !== undefined && offset !== undefined) {
+    values.push(limit);
+    query += ` LIMIT $${values.length}`; // Escribirá LIMIT $2 (o $1 si no hubo título)
+
+    values.push(offset);
+    query += ` OFFSET $${values.length}`; // Escribirá OFFSET $3 (o $2)
+  }
+
+  // 5. Ejecutamos la consulta con seguridad absoluta
+  const result = await pool.query(query, values);
   return result.rows;
 };
 

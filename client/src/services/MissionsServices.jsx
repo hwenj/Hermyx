@@ -14,7 +14,7 @@ export const getMissions = async (options) => {
   if (page && limit) {
     // API search
     const { data } = await api.get('/missions', {
-      params: { page, limit },
+      params: { page, limit, ...options.params },
     });
 
     return data;
@@ -23,7 +23,7 @@ export const getMissions = async (options) => {
   // Not paginated
   else {
     // API search
-    const { data } = await api.get('/missions');
+    const { data } = await api.get('/missions', { ...options.params });
 
     return data.missions;
   }

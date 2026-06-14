@@ -3,8 +3,13 @@ import { getMissionsInfiniteQueryOptions } from './../queries/MissionsQueries';
 import { PAGINATION_LIMIT } from '../consts/consts';
 import { MissionSearchCard } from '../components/custom/missions/MissionSearchCard';
 import { Button } from '@/components/ui/button';
+import { useSearchParams } from 'react-router-dom';
 
 export const SearchMission = () => {
+  // Search params, if they exists
+  const [searchParams] = useSearchParams();
+  const title = searchParams.get('title') || '';
+
   // Query options
   const retryOption = (failureCount, error) => {
     if (error.response?.status === 404) return false; // So Axios won't try to search again the data if there is none
@@ -14,9 +19,13 @@ export const SearchMission = () => {
   // API call using React Query (if the same query is used in more than one componente it should be isolated)
   const { data, hasNextPage, isFetchNextPage, fetchNextPage } =
     useInfiniteQuery(
-      getMissionsInfiniteQueryOptions(PAGINATION_LIMIT.MISSIONS, {
-        retry: retryOption,
-      }),
+      getMissionsInfiniteQueryOptions(
+        PAGINATION_LIMIT.MISSIONS,
+        { title },
+        {
+          retry: retryOption,
+        },
+      ),
     );
 
   // Early returns for each state

@@ -197,7 +197,7 @@ function MissionPayInner() {
       if (selectedPmId === 'new') await payWithNewCard();
       else await payWithSavedCard();
 
-      navigate('/home');
+      navigate('/');
     } catch (e) {
       setError(errMsg(e, 'Error de pago'));
     } finally {

@@ -63,4 +63,7 @@ export const consts = {
   USERNAME_MAX_LENGTH: 20,
 
   /// User consts
+
+  /// Missions consts
+  SEARCH_MISSION_TITLE_MAX_LENGTH: 100,
 };

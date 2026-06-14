@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { logInAction } from '../actions/AuthActions';
 import { initialStateUseStateAction } from '../consts/consts.js';
 import { Button } from '@/components/ui/button';
-import { Form } from '../components/custom/form/Form';
-import { InputFormField } from './../components/custom/form/InputFormField';
-import { AlertForm } from './../components/custom/form/AlertForm';
-import { PasswordInputFormField } from '../components/custom/form/PasswordInputFormField';
+import { Form } from '../components/custom/form/CardForm.jsx';
+import { InputFormField } from '../components/custom/form/FormInputField.jsx';
+import { AlertForm } from '../components/custom/form/FormAlert.jsx';
+import { PasswordInputFormField } from '../components/custom/form/FormPasswordInputField.jsx';
 import { messages } from '../messages/messages.js';
+import { consts } from '@hermyx/shared';
 
 export const LogIn = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export const LogIn = () => {
 
   // Effect for navigating to home
   useEffect(() => {
-    if (state.success) navigate('/home');
+    if (state.success) navigate('/');
   }, [state.success, navigate]);
 
   // Logic for cleaning errors in fields or alerts when modifications are done
@@ -74,6 +75,7 @@ export const LogIn = () => {
             name='usernameEmail'
             defaultValue={state.data?.usernameEmail || ''}
             autoComplete='off'
+            maxLength={consts.USERNAME_MAX_LENGTH}
             required
             aria-invalid={
               !clearedFields.usernameEmail && !!state.errors?.usernameEmail

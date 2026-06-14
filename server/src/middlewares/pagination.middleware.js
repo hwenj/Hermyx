@@ -7,12 +7,15 @@ export const pagination =
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
 
+    // Other optional parameters
+    const title = req.query.title || undefined;
+
     // Indexes for searching data correctly
     const offset = (page - 1) * limit;
 
     // Needed data is search in a parallel way
     const [data, length] = await Promise.all([
-      getData(limit, offset),
+      getData(limit, offset, title),
       countData(),
     ]);
 

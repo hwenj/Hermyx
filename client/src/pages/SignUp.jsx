@@ -4,10 +4,11 @@ import { signUpAction } from '../actions/AuthActions';
 import { initialStateUseStateAction } from '../consts/consts';
 import { messages } from '../messages/messages';
 import { Button } from '@/components/ui/button';
-import { Form } from '../components/custom/form/Form';
-import { InputFormField } from './../components/custom/form/InputFormField';
-import { AlertForm } from './../components/custom/form/AlertForm';
-import { PasswordInputFormField } from '../components/custom/form/PasswordInputFormField';
+import { Form } from '../components/custom/form/CardForm';
+import { InputFormField } from '../components/custom/form/FormInputField';
+import { AlertForm } from '../components/custom/form/FormAlert';
+import { PasswordInputFormField } from '../components/custom/form/FormPasswordInputField';
+import { consts } from '@hermyx/shared';
 
 export const SignUp = () => {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ export const SignUp = () => {
             defaultValue={state.data?.username || ''}
             autoComplete='username'
             required
-            maxLength={20}
+            maxLength={consts.USERNAME_MAX_LENGTH}
             aria-invalid={!clearedFields.username && !!state.errors?.username}
             disabled={isPending}
             onChange={handleFieldChange}
@@ -94,7 +95,7 @@ export const SignUp = () => {
             defaultValue={state.data?.email || ''}
             autoComplete='email'
             required
-            pattern='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            pattern='^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'
             aria-invalid={!clearedFields.email && !!state.errors?.email}
             disabled={isPending}
             onChange={handleFieldChange}

@@ -21,10 +21,10 @@ export const MissionSearchCard = ({ mission }) => {
           <CardTitle asChild>
             <h2>{mission.title}</h2>
           </CardTitle>
-          <CardDescription>
+          <CardDescription>By {mission.username}</CardDescription>
+          <CardAction>
             <p>{timestampToDayMonthYear(mission.publication_date)}</p>
-          </CardDescription>
-          <CardAction>Card Action</CardAction>
+          </CardAction>
         </CardHeader>
         <CardContent className='flex flex-1 flex-col'>
           <div className='mb-4'>{mission.description}</div>

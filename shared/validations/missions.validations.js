@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { messages } from '../messages/messages.js';
+import { consts } from '../consts/consts.js';
 
 // Server and client sign up shared validation
 const basePublishSchema = z.object({
@@ -58,4 +59,24 @@ export const getMissionsQuerySchema = z.object({
     .int(messages.FIELD_INTEGER('Limit'))
     .min(0, messages.FIELD_POSITIVE('Limit'))
     .optional(),
+  title: z
+    .string()
+    .trim()
+    .max(
+      consts.SEARCH_MISSION_TITLE_MAX_LENGTH,
+      messages.FIELD_TOO_LONG('Input'),
+    )
+    .min(1, messages.FIELD_REQUIRED)
+    .optional(),
+});
+
+export const searchMissionByTitleSchema = z.object({
+  searchMissionByTitle_input: z
+    .string()
+    .trim()
+    .min(1, messages.FIELD_REQUIRED)
+    .max(
+      consts.SEARCH_MISSION_TITLE_MAX_LENGTH,
+      messages.FIELD_TOO_LONG('Input'),
+    ),
 });

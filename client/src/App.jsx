@@ -30,14 +30,7 @@ function App() {
       ></Route>
 
       {/* Home */}
-      <Route
-        path='/home'
-        element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        }
-      ></Route>
+      <Route path='/' element={<Home />}></Route>
 
       {/* Missions */}
       <Route
