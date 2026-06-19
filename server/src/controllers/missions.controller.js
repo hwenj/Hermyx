@@ -12,6 +12,7 @@ import {
   updateMissionStatus,
   getByUidAndTitle,
   closeMission as _closeMission,
+  getMissionsFunded as _getMissionsFunded,
 } from '../models/mission.model.js';
 
 import {
@@ -82,6 +83,43 @@ export const getAllMissionsInDraft = async (req, res) => {
   try {
     const missions = await _getAllMissionsInDraft();
     res.status(200).json({ data: missions });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: messages.UNEXPECTED_ERROR });
+  }
+};
+
+export const getMissionsFunded = async (req, res) => {
+  const { title } = req.query;
+  const pagination = req.pagination;
+
+  try {
+    // Gets all missions filtering what is needed
+    const { rows: missions, totalCount } = await _getMissionsFunded({
+      title,
+      pagination,
+    });
+
+    const totalItems = parseInt(totalCount);
+
+    if (missions) {
+      const totalPages = Math.ceil(totalItems / pagination.limit);
+      const hasMore = pagination.page < totalPages;
+
+      // Pagination object is built
+      return res.status(200).json({
+        missions,
+        pagination: {
+          currentPage: pagination.page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          hasMore: hasMore,
+        },
+      });
+    } else
+      return res.status(404).json({
+        errors: { general: [messages.MISSIONS_NOT_FOUND] },
+      });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: messages.UNEXPECTED_ERROR });

@@ -11,6 +11,7 @@ import {
   start,
   joinMission,
   closeMission,
+  getMissionsFunded,
 } from '../controllers/missions.controller.js';
 
 import {
@@ -38,9 +39,6 @@ const dynamicValidation = (req, res, next) => {
 
 /// GET
 
-//Get mission by id
-router.get('/:id', validateParamsSchema(getMissionSchema), getMissionById);
-
 //List all missions
 router.get(
   '/',
@@ -51,6 +49,17 @@ router.get(
 
 //List all draft missions
 router.get('/in-draft', getAllMissionsInDraft);
+
+// List all funded missions
+router.get(
+  '/funded',
+  validateQuerySchema(getMissionsQuerySchema),
+  await pagination(),
+  getMissionsFunded,
+);
+
+//Get mission by id
+router.get('/:id', validateParamsSchema(getMissionSchema), getMissionById);
 
 /// POST
 
