@@ -56,7 +56,7 @@ const NewMissionForm = ({ state, action, isPending }) => {
     setClearedFields((prev) => ({ ...prev, [fieldName]: true }));
   };
   return (
-    <div className='flex flex-col w-full max-w-155 gap-4'>
+    <div className='flex flex-col w-full max-w-160 gap-4'>
       <CardForm id='newMissionForm' action={action}>
         <CardForm.Header>
           <CardForm.Title>{messages.NEW_MISSION.FORM_TITLE}</CardForm.Title>

@@ -61,7 +61,7 @@ const CardFormContent = ({ children, legend, className }) => {
   return (
     <CardContent asChild className={`px-8 py-2 ${className || ''}`}>
       <form id={id} action={action} noValidate>
-        <FieldSet>
+        <FieldSet className='min-w-0'>
           {legend && <FieldLegend className='hidden'>{legend}</FieldLegend>}
           {children}
         </FieldSet>

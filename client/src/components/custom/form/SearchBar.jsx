@@ -22,25 +22,28 @@ export const SearchBar = ({
   const searchId = `${id}-search`;
   const buttonId = `${id}-button`;
   return (
-    <form id={id} action={action} noValidate>
-      <InputGroup>
-        <FieldSet>
-          <FieldLegend className='hidden'>{legend}</FieldLegend>
-          <InputGroupInput
-            id={fieldId}
-            name={fieldId}
-            type='text'
-            autoComplete='off'
-            required
-            placeholder='Search mission in Hermyx...'
-            aria-describedby={searchId}
-            disabled={isPending}
-            {...props}
-          />
-        </FieldSet>
-        <InputGroupAddon>
-          <Search id={searchId} aria-label='Content to search:' />
-        </InputGroupAddon>
+    <form id={id} action={action} noValidate className='w-150'>
+      <InputGroup className='bg-white flex justify-between'>
+        <div className='flex'>
+          <FieldSet>
+            <FieldLegend className='hidden'>{legend}</FieldLegend>
+            <InputGroupInput
+              id={fieldId}
+              name={fieldId}
+              type='text'
+              autoComplete='off'
+              required
+              placeholder='Search mission in Hermyx...'
+              aria-describedby={searchId}
+              disabled={isPending}
+              {...props}
+              className='w-125'
+            />
+          </FieldSet>
+          <InputGroupAddon>
+            <Search id={searchId} aria-label='Content to search:' />
+          </InputGroupAddon>
+        </div>
         <InputGroupAddon align='inline-end'>
           <InputGroupButton id={buttonId} type='submit' variant='secondary'>
             {isPending ? 'Searching...' : 'Search'}
