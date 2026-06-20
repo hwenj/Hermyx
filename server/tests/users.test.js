@@ -109,7 +109,7 @@ describe('GET /api/users', () => {
     expect(response.headers['content-type']).toEqual(
       expect.stringContaining('json'),
     );
-    expect(response.body.errors.general[0]).toBe(
+    expect(response.body.errors.usernameEmail[0]).toBe(
       messages.EMAIL_NOT_FOUND(test_user.email),
     );
   });
@@ -126,7 +126,7 @@ describe('GET /api/users', () => {
     expect(response.headers['content-type']).toEqual(
       expect.stringContaining('json'),
     );
-    expect(response.body.errors.general[0]).toBe(
+    expect(response.body.errors.usernameEmail[0]).toBe(
       messages.USERNAME_NOT_FOUND(test_user.username),
     );
   });
@@ -389,9 +389,7 @@ describe('POST /api/users - Sign Up', () => {
     expect(response.headers['content-type']).toEqual(
       expect.stringContaining('json'),
     );
-    expect(response.body.errors.password[0]).toBe(
-      messages.FIELD_NOT_VALID('password'),
-    );
+    expect(response.body.errors.password[0]).toBe(messages.PASSWORD_NUMBER);
 
     // Checks db
     const dbCheck = await pool.query(
