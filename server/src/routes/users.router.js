@@ -9,6 +9,8 @@ import {
   getUserPublicProfile,
   getUserCompletedMissions,
   getMyProfile,
+  getMyAccount,
+  updateMyAccount,
 } from '../controllers/users.controller.js';
 import {
   validateBodySchema,
@@ -18,11 +20,12 @@ import {
 import {
   getUsersQuerySchema,
   signUpSchema,
+  updateMyAccountSchema,
   getUsersByFirebaseUidParamSchema,
   getMissionsFromUserParamSchema,
   getMissionsFromUserQuerySchema,
 } from '@hermyx/shared';
-import { pagination } from '../middlewares/pagination.middleware.js';
+
 import { verifyToken } from '../middlewares/auth.middleware.js';
 
 /// GET
@@ -68,5 +71,14 @@ router.get(
 /// POST
 // Sign up a new user
 router.post('/', validateBodySchema(signUpSchema), signUp);
+
+router.get('/me/account', verifyToken, getMyAccount);
+
+router.patch(
+  '/me/account',
+  verifyToken,
+  validateBodySchema(updateMyAccountSchema),
+  updateMyAccount,
+);
 
 export default router;

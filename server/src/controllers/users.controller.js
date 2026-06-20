@@ -5,6 +5,8 @@ import {
   getByUsername,
   create,
   getByFirebaseUid,
+  getByUsernameExcludingUid,
+  updateMyAccount as updateMyAccountInDb,
 } from '../models/app_user.model.js';
 import {
   getCompletedMission,
@@ -303,6 +305,99 @@ export const signUp = async (req, res) => {
       await deleteFirebaseUser(firebaseUser.uid);
       throw e;
     }
+  } catch (e) {
+    console.error(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+export const updateMyAccount = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res
+        .status(401)
+        .json({ errors: { general: [messages.UNAUTHORIZED_ERROR] } });
+    }
+
+    const username = req.body.username.toLowerCase().trim();
+
+    const existingUsername = await getByUsernameExcludingUid(
+      username,
+      user.uid,
+    );
+    if (existingUsername) {
+      return res.status(400).json({
+        errors: { username: [messages.USERNAME_ALREADY_EXISTS(username)] },
+      });
+    }
+
+    const updatedUser = await updateMyAccountInDb(user.uid, {
+      username,
+      name: req.body.name,
+      surnames: req.body.surnames,
+      location: req.body.location,
+      description: req.body.description,
+    });
+
+    return res.status(200).json({
+      message: messages.ACCOUNT_UPDATED_SUCCESSFULLY,
+      account: {
+        username: updatedUser.username,
+        name: updatedUser.name,
+        surnames: updatedUser.surnames,
+        location: updatedUser.location,
+        description: updatedUser.description,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+export const getMyAccount = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ errors: { general: [messages.UNAUTHORIZED_ERROR] } });
+    }
+
+    const editableDirectFields = [
+      'username',
+      'name',
+      'surnames',
+      'location',
+      'description',
+    ];
+
+    const requiresVerificationFields = [
+      'email',
+      'password',
+      'googleAccount',
+      'paymentMethods',
+    ];
+
+    return res.status(200).json({
+      account: {
+        username: user.username,
+        name: user.name,
+        surnames: user.surnames,
+        location: user.location,
+        description: user.description,
+        email: user.email,
+        googleAccount: user.google_account,
+      },
+      editableDirectFields,
+      requiresVerificationFields,
+    });
   } catch (e) {
     console.error(e);
     return res
