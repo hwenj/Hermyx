@@ -14,14 +14,6 @@ const STRIPE_KEY =
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 
-if (!STRIPE_KEY) {
-  console.error(
-    '❌ FATAL: No existe VITE_STRIPE_PUBLIC_KEY en tu archivo .env del Frontend',
-  );
-} else {
-  console.log('✅ Clave pública cargada:', STRIPE_KEY);
-}
-
 const stripePromise = loadStripe(STRIPE_KEY || '');
 // Pasamos "" si es undefined para que no explote la app, pero avisaremos en pantalla.
 
