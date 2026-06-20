@@ -57,13 +57,7 @@ export const messages = {
 
   //// Get all paginated
   NO_MISSIONS: 'There is no missions yet.',
-  /// Errors
-  // Validation errors
-  // Server errors
 
-  //// Account
-  ///Info
-  ACCOUNT_UPDATED_SUCCESSFULLY: 'Account updated successfully.',
   MISSIONS_NOT_FOUND: 'Missions not found.',
 
   //// Create mission
@@ -77,4 +71,8 @@ export const messages = {
   MISSION_FILLED:
     'There are no vacancies open left in this mission. Try another one!',
   MISSION_ALREADY_JOINED: 'You have already joined this mission!',
+
+  //// Account
+  ///Info
+  ACCOUNT_UPDATED_SUCCESSFULLY: 'Account updated successfully.',
 };
