@@ -9,6 +9,8 @@ import { FormAlert } from '../components/custom/form/FormAlert.jsx';
 import { FormPasswordInputField } from '../components/custom/form/FormPasswordInputField.jsx';
 import { messages } from '../messages/messages.js';
 import { consts } from '@hermyx/shared';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { UseGoogleAuth } from '../hooks/useGoogleAuth';
 
 export const LogIn = () => {
   // Form action handling
@@ -52,6 +54,15 @@ const LogInForm = ({ state, action, isPending }) => {
     const fieldName = e.target.name;
     setClearedFields((prev) => ({ ...prev, [fieldName]: true }));
   };
+
+  // Sign up with Google logic
+  const {
+    isPending: isGoogleAuthPending,
+    isError,
+    error,
+    mutate,
+  } = UseGoogleAuth();
+
   return (
     <div className='flex flex-col w-full max-w-155 gap-4'>
       <CardForm id='logInForm' action={action}>
@@ -105,21 +116,29 @@ const LogInForm = ({ state, action, isPending }) => {
         </CardForm.Content>
 
         <CardForm.Footer>
-          <Button
-            className='w-full'
-            id='sendLogIn'
-            type='submit'
-            form='logInForm'
-            disabled={isPending}
-          >
-            {isPending ? 'Logging in...' : 'Log in'}
-          </Button>
+          <div className='flex flex-col w-full gap-y-1'>
+            <Button
+              className='w-full'
+              id='sendLogIn'
+              type='submit'
+              form='logInForm'
+              disabled={isPending}
+            >
+              {isPending ? 'Logging in...' : 'Log in'}
+            </Button>
+            <GoogleSignInButton
+              disabled={isPending || isGoogleAuthPending}
+              onClick={mutate}
+              isPending={isGoogleAuthPending}
+              text='Log in with Google'
+            ></GoogleSignInButton>
+          </div>
         </CardForm.Footer>
       </CardForm>
 
       {state.errors?.general && !isAlertClosed && (
         <FormAlert onClose={() => setIsAlertClosed(true)}>
-          {state.errors.general[0]}
+          {isError ? error : state.errors.general[0]}
         </FormAlert>
       )}
     </div>

@@ -9,9 +9,11 @@ import { FormInputField } from '../components/custom/form/FormInputField';
 import { FormAlert } from '../components/custom/form/FormAlert';
 import { FormPasswordInputField } from '../components/custom/form/FormPasswordInputField';
 import { consts } from '@hermyx/shared';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { UseGoogleAuth } from '../hooks/useGoogleAuth';
 
 export const SignUp = () => {
-  // Form action handling
+  // Form action, standard sign up
   const [state, signUpFormAction, isPending] = useActionState(
     signUpAction,
     initialStateUseStateAction,
@@ -52,6 +54,15 @@ const SignUpForm = ({ state, action, isPending }) => {
     const fieldName = e.target.name;
     setClearedFields((prev) => ({ ...prev, [fieldName]: true }));
   };
+
+  // Sign up with Google logic
+  const {
+    isPending: isGoogleAuthPending,
+    isError,
+    error,
+    mutate,
+  } = UseGoogleAuth();
+
   return (
     <div className='flex flex-col w-full max-w-155 gap-4'>
       <CardForm id='signUpForm' action={action}>
@@ -148,20 +159,28 @@ const SignUpForm = ({ state, action, isPending }) => {
         </CardForm.Content>
 
         <CardForm.Footer>
-          <Button
-            className='w-full'
-            id='sendSignUp'
-            type='submit'
-            form='signUpForm'
-            disabled={isPending}
-          >
-            {isPending ? 'Signing up...' : 'Sign up'}
-          </Button>
+          <div className='flex flex-col w-full gap-y-1'>
+            <Button
+              className='w-full'
+              id='sendSignUp'
+              type='submit'
+              form='signUpForm'
+              disabled={isPending}
+            >
+              {isPending ? 'Signing up...' : 'Sign up'}
+            </Button>
+            <GoogleSignInButton
+              disabled={isPending || isGoogleAuthPending}
+              onClick={mutate}
+              isPending={isGoogleAuthPending}
+              text='Sign up with Google'
+            ></GoogleSignInButton>
+          </div>
         </CardForm.Footer>
       </CardForm>
       {state.errors?.general && !isAlertClosed && (
         <FormAlert onClose={() => setIsAlertClosed(true)}>
-          {state.errors.general[0]}
+          {isError ? error : state.errors.general[0]}
         </FormAlert>
       )}
     </div>
