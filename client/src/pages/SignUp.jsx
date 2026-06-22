@@ -26,7 +26,7 @@ export const SignUp = () => {
   }, [state.success, navigate]);
 
   return (
-    <main className='flex min-h-screen items-center justify-center p-4'>
+    <main className='flex min-h-[calc(100vh-60px)] items-center justify-center p-4'>
       <SignUpForm
         state={state}
         action={signUpFormAction}
