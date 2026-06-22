@@ -1,5 +1,5 @@
 import { useActionState, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signUpAction } from '../actions/AuthActions';
 import { initialStateUseStateAction } from '../consts/consts';
 import { messages } from '../messages/messages';
@@ -68,6 +68,16 @@ const SignUpForm = ({ state, action, isPending }) => {
       <CardForm id='signUpForm' action={action}>
         <CardForm.Header>
           <CardForm.Title>{messages.SIGN_UP.FORM_TITLE}</CardForm.Title>
+          <CardForm.Description>
+            {`Already have an account? `}
+            <Link
+              to={'/login'}
+              className='text-black underline
+            '
+            >
+              {'Log in!'}
+            </Link>
+          </CardForm.Description>
         </CardForm.Header>
 
         <CardForm.Content legend='Application sign up form.'>
