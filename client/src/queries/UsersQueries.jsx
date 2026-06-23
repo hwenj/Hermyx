@@ -3,6 +3,7 @@ import {
   getMyProfile,
   getPublicUserProfile,
   getPublicUserProfileMissions,
+  updateMyProfile,
 } from '../services/UsersServices';
 
 export const getPublicUserProfileQueryOptions = (username, options) => {
@@ -41,4 +42,11 @@ export const getMyProfileQueryOptions = (options) => {
     queryFn: getMyProfile,
     ...options,
   });
+};
+
+export const updateMyProfileMutationOptions = (options) => {
+  return {
+    mutationFn: updateMyProfile,
+    ...options,
+  };
 };

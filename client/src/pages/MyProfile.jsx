@@ -1,10 +1,33 @@
-import { useQuery } from '@tanstack/react-query';
-import { User } from 'lucide-react';
-import { getMyProfileQueryOptions } from '../queries/UsersQueries';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Edit, Save, User, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FormInputField } from '../components/custom/form/FormInputField';
+import { FormTextareaField } from '../components/custom/form/FormTextareaField';
+import {
+  getMyProfileQueryOptions,
+  updateMyProfileMutationOptions,
+} from '../queries/UsersQueries';
+import { AuthContext } from '../contexts/AuthContext';
+import { consts } from '@hermyx/shared';
 
 const emptyMessage = 'Nothing registered';
+const initialForm = {
+  username: '',
+  name: '',
+  surnames: '',
+  description: '',
+};
 
 export const MyProfile = () => {
+  const queryClient = useQueryClient();
+  const { setCurrentUser } = useContext(AuthContext);
+  const [form, setForm] = useState(initialForm);
+  const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
+
   const { data, isLoading, isError } = useQuery(
     getMyProfileQueryOptions({
       retry: (failureCount, error) => {
@@ -13,6 +36,73 @@ export const MyProfile = () => {
       },
     }),
   );
+
+  const { mutate, isPending } = useMutation(
+    updateMyProfileMutationOptions({
+      onSuccess: (response) => {
+        const nextForm = buildForm(response.profile);
+
+        setForm(nextForm);
+        setErrors({});
+        setSuccessMessage(response.message);
+        setIsEditing(false);
+        setCurrentUser((currentUser) =>
+          currentUser
+            ? { ...currentUser, username: response.profile.username }
+            : currentUser,
+        );
+        queryClient.setQueryData(['getMyProfile'], (currentData) => ({
+          ...currentData,
+          user: {
+            ...currentData?.user,
+            ...response.profile,
+          },
+        }));
+        queryClient.invalidateQueries({ queryKey: ['getMyProfile'] });
+      },
+      onError: (error) => {
+        setErrors(error.response?.data?.errors || {});
+        setSuccessMessage('');
+      },
+    }),
+  );
+
+  const profileForm = useMemo(() => buildForm(data?.user || {}), [data?.user]);
+
+  useEffect(() => {
+    if (!successMessage) return undefined;
+
+    const timeoutId = setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [successMessage]);
+
+  const updateField = (field, value) => {
+    setForm((currentForm) => ({ ...currentForm, [field]: value }));
+    setErrors((currentErrors) => ({ ...currentErrors, [field]: undefined }));
+    setSuccessMessage('');
+  };
+
+  const handleEdit = () => {
+    setForm(profileForm);
+    setIsEditing(true);
+    setErrors({});
+    setSuccessMessage('');
+  };
+
+  const handleCancel = () => {
+    setForm(profileForm);
+    setIsEditing(false);
+    setErrors({});
+    setSuccessMessage('');
+  };
+
+  const handleSave = () => {
+    if (!isEditing) return;
+    mutate(form);
+  };
 
   if (isLoading) {
     return (
@@ -61,26 +151,125 @@ export const MyProfile = () => {
         </div>
       </section>
 
-      <section className='grid gap-4 sm:grid-cols-2'>
-        <ProfileField label='Name' value={user.name} />
-        <ProfileField label='Surnames' value={user.surnames} />
-        <ProfileField label='Username' value={user.username} />
-        <ProfileField label='Description' value={user.description} large />
+      <section className='rounded-lg border p-4 sm:p-6'>
+        <form className='space-y-6'>
+          <div className='flex justify-end'>
+            <div className='flex gap-2'>
+              {isEditing && (
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleCancel}
+                  disabled={isPending}
+                >
+                  <X aria-hidden='true' />
+                  Cancel
+                </Button>
+              )}
+              <Button
+                type='button'
+                onClick={isEditing ? handleSave : handleEdit}
+                disabled={isPending}
+              >
+                {isEditing ? (
+                  <Save aria-hidden='true' />
+                ) : (
+                  <Edit aria-hidden='true' />
+                )}
+                {isEditing ? 'Save' : 'Edit'}
+              </Button>
+            </div>
+          </div>
+
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <FormInputField
+              id='profileUsername'
+              label='Username (required):'
+              value={getFieldValue(
+                isEditing ? form.username : profileForm.username,
+                isEditing,
+              )}
+              maxLength={consts.USERNAME_MAX_LENGTH}
+              disabled={!isEditing || isPending}
+              invalid={!!errors.username}
+              error={errors.username?.[0]}
+              onChange={(event) => updateField('username', event.target.value)}
+            />
+            <FormInputField
+              id='profileName'
+              label='Name:'
+              value={getFieldValue(
+                isEditing ? form.name : profileForm.name,
+                isEditing,
+              )}
+              maxLength={consts.NAME_MAX_LENGTH}
+              disabled={!isEditing || isPending}
+              invalid={!!errors.name}
+              error={errors.name?.[0]}
+              onChange={(event) => updateField('name', event.target.value)}
+            />
+            <FormInputField
+              id='profileSurnames'
+              label='Surnames:'
+              value={getFieldValue(
+                isEditing ? form.surnames : profileForm.surnames,
+                isEditing,
+              )}
+              maxLength={consts.SURNAMES_MAX_LENGTH}
+              disabled={!isEditing || isPending}
+              invalid={!!errors.surnames}
+              error={errors.surnames?.[0]}
+              onChange={(event) => updateField('surnames', event.target.value)}
+            />
+            <div className='sm:col-span-2'>
+              <FormTextareaField
+                key={`profileDescription-${isEditing}`}
+                id='profileDescription'
+                label='Description:'
+                value={getFieldValue(
+                  isEditing ? form.description : profileForm.description,
+                  isEditing,
+                )}
+                maxLength={consts.DESCRIPTION_MAX_LENGTH}
+                disabled={!isEditing || isPending}
+                invalid={!!errors.description}
+                error={errors.description?.[0]}
+                onChange={(event) =>
+                  updateField('description', event.target.value)
+                }
+              />
+            </div>
+          </div>
+
+          {successMessage && (
+            <Alert>
+              <AlertTitle>Saved</AlertTitle>
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
+
+          {errors.general?.[0] && (
+            <Alert variant='destructive'>
+              <AlertTitle>Could not save changes</AlertTitle>
+              <AlertDescription>{errors.general[0]}</AlertDescription>
+            </Alert>
+          )}
+        </form>
       </section>
     </main>
   );
 };
 
-const ProfileField = ({ label, value, large = false }) => {
-  return (
-    <article
-      className={`rounded-lg border p-4 ${large ? 'sm:col-span-2' : ''}`}
-    >
-      <h2 className='mb-2 text-sm font-medium text-muted-foreground'>
-        {label}
-      </h2>
+const buildForm = (profile) => {
+  return {
+    username: profile.username || '',
+    name: profile.name || '',
+    surnames: profile.surnames || '',
+    description: profile.description || '',
+  };
+};
 
-      <p className='break-words text-base'>{value || emptyMessage}</p>
-    </article>
-  );
+const getFieldValue = (value, isEditing) => {
+  if (isEditing) return value;
+  return value || emptyMessage;
 };

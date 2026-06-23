@@ -67,6 +67,12 @@ export const getMyProfile = async () => {
   return data;
 };
 
+// Updates logged user's profile
+export const updateMyProfile = async (profile) => {
+  const { data } = await api.patch('/users/me/profile', profile);
+  return data;
+};
+
 // Deletes user via email
 export const deleteUserByUid = async (uid) => {
   // API search
