@@ -89,3 +89,42 @@ export const deleteByUid = async (uid) => {
   const result = await pool.query(query, [uid]);
   return result.rows[0];
 };
+
+export const anonymize = async (uid) => {
+  const query = `UPDATE app_user SET
+  username = 'Unknown adventurer',
+  email = 'deleted_||uid||@hermyx.deleted',
+  firebase_uid = 'deleted',
+  description = NULL,
+  name = NULL,
+  surnames = NULL,
+  location = NULL
+  WHERE uid = $1
+  `;
+  const result = await pool.query(query, [uid]);
+  return result.rows[0];
+};
+
+export const deanonymize = async (user) => {
+  const query = `UPDATE app_user SET
+  username = $2,
+  email = $3,
+  firebase_uid = $4,
+  description = $5,
+  name = $6,
+  surnames = $7,
+  location = $8
+  WHERE uid = $1
+  `;
+  const result = await pool.query(query, [
+    user.uid,
+    user.username,
+    user.email,
+    user.firebaseUid,
+    user.description,
+    user.name,
+    user.surnames,
+    user.location,
+  ]);
+  return result.rows[0];
+};

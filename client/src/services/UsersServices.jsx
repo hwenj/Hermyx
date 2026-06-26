@@ -61,9 +61,23 @@ export const getPublicUserProfileMissions = async (
   return data;
 };
 
-// Deletes user via email
+// Updates users email on DB and Firebase
+export const updateUserEmail = async (email) => {
+  // API search
+  const { data } = await api.put('/users/me/email', { email });
+  return data;
+};
+
+// Deletes user via uid (used for rollbacks)
 export const deleteUserByUid = async (uid) => {
   // API search
   const { data } = await api.delete(`/users/${uid}`);
+  return data;
+};
+
+// Deletes user (anonymizes it)
+export const deleteUser = async () => {
+  // API search
+  const { data } = await api.delete('/users/me');
   return data;
 };

@@ -8,6 +8,9 @@ import {
   getByUsernameExcludingUid,
   updateMyAccount as updateMyAccountInDb,
   deleteByUid as _deleteByUid,
+  updateUserEmail as _updateUserEmail,
+  anonymize as _anonymize,
+  deanonymize,
 } from '../models/app_user.model.js';
 import {
   getPublicProfileCreatedMissions,
@@ -18,6 +21,7 @@ import {
 import {
   createFirebaseUser,
   deleteFirebaseUser,
+  updateFirebaseEmail,
 } from '../services/auth.service.js';
 import { stringShortener } from '../utils/strings.utils.js';
 
@@ -467,6 +471,75 @@ export const deleteByUid = async (req, res) => {
     return res.status(200);
   } catch (e) {
     console.error(e);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+// Deletes (anonymize) current user
+export const deleteUser = async (req, res) => {
+  const user = req.user;
+  let anonymize;
+  try {
+    // Anonymize user in db
+    anonymize = await _anonymize(user.uid);
+
+    if (anonymize) {
+      const firebaseDelete = await deleteFirebaseUser(user.firebaseUid);
+
+      if (!firebaseDelete) {
+        await deanonymize(user);
+        return res
+          .status(500)
+          .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+      } else return res.status(200);
+    } else
+      return res
+        .status(500)
+        .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  } catch (e) {
+    console.error(e);
+    // If email was changed on Firebase but not in Hermyx, it should rollback
+    if (anonymize) await deanonymize(user);
+    return res
+      .status(500)
+      .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  }
+};
+
+// Updates user email on DB and Firebase
+export const updateUserEmail = async (req, res) => {
+  const user = req.user;
+  const currentEmail = user.email;
+  let firebaseChange;
+  try {
+    const { email } = req.body;
+
+    // First, email is changed on Firebase
+    firebaseChange = await updateFirebaseEmail(user.firebaseUid, email);
+
+    if (firebaseChange) {
+      // Then is changed on Hermyx database
+      const hermyxChange = await _updateUserEmail(user.uid, email);
+
+      if (hermyxChange) return res.status(200).json({ user: hermyxChange });
+      else {
+        // If email was changed on Firebase but not in Hermyx, it should rollback
+        await updateFirebaseEmail(user.firebaseUid, currentEmail);
+        return res
+          .status(500)
+          .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+      }
+    } else
+      return res
+        .status(500)
+        .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });
+  } catch (e) {
+    console.error(e);
+    // If email was changed on Firebase but not in Hermyx, it should rollback
+    if (firebaseChange)
+      await updateFirebaseEmail(user.firebaseUid, currentEmail);
     return res
       .status(500)
       .json({ errors: { general: [messages.UNEXPECTED_ERROR] } });

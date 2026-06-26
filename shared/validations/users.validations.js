@@ -178,6 +178,11 @@ export const syncGoogleSchema = z.object({
   isNewUser: z.boolean(),
 });
 
+// Updates user email
+export const updateUserEmailSchema = z.object({
+  email: z.email(messages.FIELD_NOT_VALID('email')).trim(),
+});
+
 // Delete user by uid backend validation
 export const deleteUserByUid = z.object({
   uid: z.coerce
