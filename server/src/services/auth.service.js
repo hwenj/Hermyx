@@ -7,6 +7,7 @@ export const createFirebaseUser = async (user) => {
     email: user.email,
     password: user.password,
     displayName: user.username,
+    emailVerified: true,
   });
 
   // If Firebase user is not received, it returns the error
@@ -19,9 +20,28 @@ export const createFirebaseUser = async (user) => {
 };
 
 export const deleteFirebaseUser = async (uid) => {
-  await firebaseAdmin.auth().deleteUser(uid);
+  return await firebaseAdmin.auth().deleteUser(uid);
 };
 
 export const verifyIdToken = async (token) => {
   return await firebaseAdmin.auth().verifyIdToken(token);
+};
+
+export const getFirebaseAuthProviders = async (firebaseUid) => {
+  const firebaseUser = await firebaseAdmin.auth().getUser(firebaseUid);
+  const providers = (firebaseUser.providerData || []).map((p) => p.providerId);
+
+  return {
+    providers,
+    hasGoogleAccountLinked: providers.includes('google.com'),
+    hasEmailPasswordCredential: providers.includes('password'),
+  };
+};
+
+export const updateFirebaseAccount = async (firebaseUid, updates) => {
+  return await firebaseAdmin.auth().updateUser(firebaseUid, updates);
+};
+
+export const getUserByEmail = async (email) => {
+  return await firebaseAdmin.auth().getUserByEmail(email);
 };

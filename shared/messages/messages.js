@@ -14,6 +14,7 @@ export const messages = {
     `${field} must be longer than ${min} characters.`,
   FIELD_REQUIRED: 'This field is required.',
   FORBIDDEN: 'Action is not authorized.',
+  OPERATION_ERROR: 'Operation ended abruptly.',
   UNAUTHORIZED_ERROR: 'User is not authorized for this action.',
   UNEXPECTED_ERROR: 'Unexpected error.',
 
@@ -57,17 +58,33 @@ export const messages = {
 
   //// Get all paginated
   NO_MISSIONS: 'There is no missions yet.',
+
   MISSIONS_NOT_FOUND: 'Missions not found.',
 
   //// Create mission
   MISSION_SAME_TITLE: 'You already have a mission titled like this.',
 
   //// Start mission
-  START_WITHOUT_ADVENTURERS: `You can't close a mission without adventurers.`,
+  START_WITHOUT_ADVENTURERS: `You can't start a mission without adventurers.`,
 
   //// Join mission
   JOIN_OWN_MISSION: `You can't join your own mission.`,
   MISSION_FILLED:
     'There are no vacancies open left in this mission. Try another one!',
   MISSION_ALREADY_JOINED: 'You have already joined this mission!',
+
+  //// Profile
+  ///Info
+  PROFILE_UPDATED_SUCCESSFULLY: 'Profile updated successfully.',
+  EMAILS_NOT_MATCH: 'E-mails do not match.',
+  COULD_NOT_UPDATE_EMAIL: 'Could not create update e-mail.',
+  COULD_NOT_UPDATE_PASSWORD: 'Could not create update password.',
+  COULD_NOT_LINK_GOOGLE_ACCOUNT: `Could not link Google account.`,
+  COULD_NOT_UNLINK_GOOGLE_ACCOUNT: `Could not unlink Google account.`,
+  NO_SUCH_PROVIDER: `The user isn't linked to the provider or the provider doesn't exist.`,
+  COULD_NOT_ADD_EMAIL_AUTHENTICATION: `Could not add new e-mail authentication.`,
+  CREDENTIAL_ALREADY_IN_USE:
+    'This Google account is already linked to another Hermyx account',
+  CHANGING_EMAIL_TO_CURRENT:
+    'The new email cannot be the same as your current one.',
 };

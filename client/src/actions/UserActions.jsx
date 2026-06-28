@@ -1,23 +1,19 @@
 import {
-  addEmailAuthenticationSchema,
-  logInSchema,
-  signUpSchema,
+  messages,
+  updateEmailValidation,
+  updatePasswordValidation,
+  userConfigurationValidation,
 } from '@hermyx/shared';
-import { messages } from '@hermyx/shared';
-import {
-  addEmailAuthentication,
-  createUser,
-  getUserByUsername,
-} from '../services/UsersServices';
-import { firebaseSignIn } from '../services/AuthServices';
+import { updateUserEmail, userConfiguration } from '../services/UsersServices';
+import { updateUserPassword } from '../services/AuthServices';
 
-// Sign up action, executed when form is sent
-export const signUpAction = async (previousState, formData) => {
+// Update email action
+export const updateEmailAction = async (previousState, formData) => {
   // Data is collected
   const fieldsData = Object.fromEntries(formData);
 
   // Fields validation
-  const validatedFields = signUpSchema.safeParse(fieldsData);
+  const validatedFields = updateEmailValidation.safeParse(fieldsData);
 
   if (!validatedFields.success) {
     return {
@@ -29,12 +25,12 @@ export const signUpAction = async (previousState, formData) => {
 
   // API call
   try {
-    const success = await createUser(fieldsData);
+    const success = await updateUserEmail(fieldsData.email);
 
     if (!success)
       throw {
         errors: {
-          general: [messages.COULD_NOT_CREATE_NEW_ACCOUNT],
+          general: [messages.COULD_NOT_UPDATE_EMAIL],
         },
       };
 
@@ -64,63 +60,36 @@ export const signUpAction = async (previousState, formData) => {
   }
 };
 
-// Log in action, executed when form is sent
-export const logInAction = async (previousState, formData) => {
+// Update password action
+export const updatePasswordAction = async (previousState, formData) => {
   // Data is collected
   const fieldsData = Object.fromEntries(formData);
 
-  // First it defines if input is email or username
-  fieldsData.usernameEmail.includes('@')
-    ? (fieldsData.email = fieldsData.usernameEmail)
-    : (fieldsData.username = fieldsData.usernameEmail);
-
   // Fields validation
-  const validatedFields = logInSchema.safeParse(fieldsData);
-  if (!validatedFields.success) {
-    // Turns email or username error into usernameEmail error
-    const errors = {
-      password: validatedFields.error.flatten().fieldErrors.password,
-      usernameEmail: validatedFields.error.flatten().fieldErrors.email
-        ? validatedFields.error.flatten().fieldErrors.email
-        : validatedFields.error.flatten().fieldErrors.username,
-    };
+  const validatedFields = updatePasswordValidation.safeParse(fieldsData);
 
+  if (!validatedFields.success) {
     return {
       success: false,
-      errors: errors,
+      errors: validatedFields.error.flatten().fieldErrors,
       data: fieldsData,
     };
   }
 
   // API call
   try {
-    // If username is provided, its email is searched
-    if (fieldsData.username) {
-      const user = await getUserByUsername(fieldsData.username);
-      fieldsData.email = user.email;
-    }
-
-    // Log In is done on client with Firebase
-    await firebaseSignIn(fieldsData.email, fieldsData.password);
-
-    return { success: true };
+    await updateUserPassword(fieldsData.password);
+    // Success
+    return { success: true, data: null, errors: {} };
   } catch (error) {
-    // Controlled errors thrown from backend
+    // If it some controlled error found in server
     if (
-      [400, 404, 500].includes(error.response?.status) &&
+      [400, 500].includes(error.response?.status) &&
       error.response.data?.errors
     )
       return {
         success: false,
         errors: error.response.data.errors,
-        data: fieldsData,
-      };
-
-    // Controlled errors thrown from frontend
-    if (error.errors)
-      return {
-        success: false,
-        errors: error.errors,
         data: fieldsData,
       };
 
@@ -136,13 +105,17 @@ export const logInAction = async (previousState, formData) => {
   }
 };
 
-// Add e-mail authentication action action, executed when form is sent
-export const addEmailAuthenticationAction = async (previousState, formData) => {
+// Update password action
+export const userConfigurationAction = async (previousState, formData) => {
   // Data is collected
   const fieldsData = Object.fromEntries(formData);
 
+  // Data is parsed
+  fieldsData.show_missions_to_others =
+    fieldsData.show_missions_to_others === 'true' ? true : false;
+
   // Fields validation
-  const validatedFields = addEmailAuthenticationSchema.safeParse(fieldsData);
+  const validatedFields = userConfigurationValidation.safeParse(fieldsData);
 
   if (!validatedFields.success) {
     return {
@@ -152,17 +125,14 @@ export const addEmailAuthenticationAction = async (previousState, formData) => {
     };
   }
 
+  // JSON configuration object is built
+  const configuration = {
+    show_missions_to_others: fieldsData.show_missions_to_others,
+  };
+
   // API call
   try {
-    const success = await addEmailAuthentication(fieldsData);
-
-    if (!success)
-      throw {
-        errors: {
-          general: [messages.COULD_NOT_ADD_EMAIL_AUTHENTICATION],
-        },
-      };
-
+    await userConfiguration(configuration);
     // Success
     return { success: true, data: null, errors: {} };
   } catch (error) {

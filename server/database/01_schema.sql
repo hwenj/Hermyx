@@ -19,13 +19,14 @@ CREATE TABLE APP_USER (
 	username VARCHAR(20) NOT NULL UNIQUE,
 	email VARCHAR(100) UNIQUE,
 	firebase_uid VARCHAR(255) NOT NULL UNIQUE,
-	google_account VARCHAR(255),
 	description VARCHAR(500),
 	name VARCHAR(50),
 	surnames VARCHAR(100),
 	location VARCHAR(300),
+	avatar VARCHAR(255),
+	configuration JSONB NOT NULL DEFAULT '{"show_missions_to_others": true}'::jsonb,
 	stripe_customer_id VARCHAR(255),
-  	stripe_connected_id VARCHAR(255)
+  stripe_connected_id VARCHAR(255)
 );
 
 CREATE TABLE PAYMENT_METHOD (
@@ -56,9 +57,10 @@ CREATE TABLE MISSION (
     'refunded',
     'canceled',
     'in_dispute')),
+	completion_date TIMESTAMP,
 	owner_id INT NOT NULL,
 	stripe_pi_id VARCHAR(255),
-  	stripe_refund_id VARCHAR(255),
+  stripe_refund_id VARCHAR(255),
 	FOREIGN KEY (owner_id) REFERENCES APP_USER(uid)
 );
 
@@ -66,7 +68,8 @@ CREATE TABLE MISSION_PARTICIPATION (
 	mid INT NOT NULL,
 	adventurer_id INT NOT NULL,
 	transfer_id VARCHAR(255),
-  	amount_paid NUMERIC,
+  amount_paid NUMERIC,
+	review VARCHAR(500),
 	FOREIGN KEY (mid) REFERENCES MISSION(mid),
 	FOREIGN KEY (adventurer_id) REFERENCES APP_USER(uid),
 	PRIMARY KEY (mid, adventurer_id)

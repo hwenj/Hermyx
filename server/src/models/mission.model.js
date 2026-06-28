@@ -63,6 +63,16 @@ export const updateStatus = async (mid, status) => {
   await pool.query(query, [status, mid]);
 };
 
+// Updates mission status and stores completion date for paid-out missions.
+export const updateReleaseStatus = async (mid, status) => {
+  const query = `
+    UPDATE mission
+    SET status = $1, completion_date = NOW()
+    WHERE mid = $2
+  `;
+  await pool.query(query, [status, mid]);
+};
+
 //Set the mission as 'refunded' and saves the Stripe Refund ID for reference.
 export const finalizeRefund = async (mid, refundId) => {
   const query = `
@@ -312,5 +322,147 @@ export const getByUidAndTitle = async (uid, title) => {
 export const closeMission = async (mid) => {
   const query = `UPDATE mission SET status = 'accepted' WHERE mid = $1 RETURNING *`;
   const result = await pool.query(query, [mid]);
+  return result.rows[0];
+};
+
+// Gets created missions displayed in another user's public profile.
+export const getPublicProfileCreatedMissions = async (
+  userId,
+  pagination = null,
+) => {
+  let query = `
+    SELECT
+      m.mid,
+      m.title,
+      owner_user.username,
+      m.description,
+      m.difficulty,
+      m.total_vacancies,
+      m.occupied_vacancies,
+      m.monetary_reward,
+      CASE
+        WHEN m.status = 'funded' THEN 'looking_for_adventurers'
+        WHEN m.status IN (
+          'in_progress',
+          'delivered',
+          'accepted',
+          'releasing'
+        ) THEN 'in_progress'
+        WHEN m.status IN (
+          'released',
+          'partially_released'
+        ) THEN 'closed'
+      END AS public_status,
+      CASE
+        WHEN m.completion_date IS NULL THEN NULL
+        ELSE m.completion_date - m.publication_date
+      END AS completion_time,
+      m.publication_date,
+      m.completion_date,
+      COUNT(*) OVER() AS total_count
+    FROM mission m
+    JOIN app_user owner_user ON owner_user.uid = m.owner_id
+    WHERE m.owner_id = $1
+      AND m.status IN (
+        'funded',
+        'in_progress',
+        'delivered',
+        'accepted',
+        'releasing',
+        'released',
+        'partially_released'
+      )
+    ORDER BY m.publication_date DESC
+  `;
+  const values = [userId];
+
+  if (pagination) {
+    values.push(pagination.limit);
+    query += ` LIMIT $${values.length}`;
+
+    values.push(pagination.offset);
+    query += ` OFFSET $${values.length}`;
+  }
+
+  const result = await pool.query(query, values);
+
+  if (result.rows.length === 0) {
+    return { rows: [], totalCount: 0 };
+  }
+
+  const totalCount = parseInt(result.rows[0].total_count);
+  const rows = result.rows.map((row) => {
+    // eslint-disable-next-line no-unused-vars
+    const { total_count, ...missionData } = row;
+    return missionData;
+  });
+
+  return { rows, totalCount };
+};
+
+// Gets joined missions displayed in another user's public profile.
+export const getPublicProfileJoinedMissions = async (
+  userId,
+  pagination = null,
+) => {
+  let query = `
+    SELECT
+      m.mid,
+      m.title,
+      owner_user.username,
+      m.description,
+      m.difficulty,
+      m.total_vacancies,
+      m.occupied_vacancies,
+      m.monetary_reward,
+      CASE
+        WHEN m.completion_date IS NULL THEN NULL
+        ELSE m.completion_date - m.publication_date
+      END AS completion_time,
+      m.publication_date,
+      m.completion_date,
+      COUNT(*) OVER() AS total_count
+    FROM mission_participation mp
+    JOIN mission m ON m.mid = mp.mid
+    JOIN app_user owner_user ON owner_user.uid = m.owner_id
+    WHERE mp.adventurer_id = $1
+    ORDER BY m.completion_date DESC NULLS LAST, m.publication_date DESC
+  `;
+  const values = [userId];
+
+  if (pagination) {
+    values.push(pagination.limit);
+    query += ` LIMIT $${values.length}`;
+
+    values.push(pagination.offset);
+    query += ` OFFSET $${values.length}`;
+  }
+
+  const result = await pool.query(query, values);
+
+  if (result.rows.length === 0) {
+    return { rows: [], totalCount: 0 };
+  }
+
+  const totalCount = parseInt(result.rows[0].total_count);
+  const rows = result.rows.map((row) => {
+    // eslint-disable-next-line no-unused-vars
+    const { total_count, ...missionData } = row;
+    return missionData;
+  });
+
+  return { rows, totalCount };
+};
+
+// Gets user active missions, created or joined
+export const getUserActiveMissions = async (uid) => {
+  const query = `
+  SELECT COUNT(DISTINCT m.mid) AS total_active
+  FROM mission m
+    LEFT JOIN mission_participation ma ON m.mid = ma.mid AND ma.adventurer_id = $1
+  WHERE m.status = 'in_progress' 
+    AND (m.owner_id = $1 OR ma.adventurer_id = $1)
+  `;
+  const result = await pool.query(query, [uid]);
   return result.rows[0];
 };

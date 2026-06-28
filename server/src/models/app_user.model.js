@@ -47,3 +47,90 @@ export const getByFirebaseUid = async (firebaseUid) => {
   const result = await pool.query(query, [firebaseUid]);
   return result.rows[0];
 };
+
+export const getByUsernameExcludingUid = async (username, uid) => {
+  const query = 'SELECT * FROM app_user WHERE username = $1 AND uid <> $2';
+  const result = await pool.query(query, [username, uid]);
+  return result.rows[0];
+};
+
+export const updateMyProfile = async (
+  uid,
+  { username, name, surnames, description },
+) => {
+  const query = `
+    UPDATE app_user
+    SET
+      username = $1,
+      name = $2,
+      surnames = $3,
+      description = $4
+    WHERE uid = $5
+    RETURNING *
+  `;
+  const result = await pool.query(query, [
+    username,
+    name,
+    surnames,
+    description,
+    uid,
+  ]);
+  return result.rows[0];
+};
+
+export const updateUserEmail = async (uid, email) => {
+  const query = 'UPDATE app_user SET email = $1 WHERE uid = $2 RETURNING *';
+  const result = await pool.query(query, [email, uid]);
+  return result.rows[0];
+};
+
+export const deleteByUid = async (uid) => {
+  const query = 'DELETE * FROM app_user WHERE uid = $1';
+  const result = await pool.query(query, [uid]);
+  return result.rows[0];
+};
+
+export const anonymize = async (uid) => {
+  const query = `UPDATE app_user SET
+  username = '?Unknown_' || $1,
+  email = 'deleted_' || $1 || '@hermyx.deleted',
+  firebase_uid = 'deleted_' || $1,
+  description = NULL,
+  name = NULL,
+  surnames = NULL,
+  location = NULL
+  WHERE uid = $1
+  `;
+  const result = await pool.query(query, [uid]);
+  return result.rowCount;
+};
+
+export const deanonymize = async (user) => {
+  const query = `UPDATE app_user SET
+  username = $2,
+  email = $3,
+  firebase_uid = $4,
+  description = $5,
+  name = $6,
+  surnames = $7,
+  location = $8
+  WHERE uid = $1
+  `;
+  const result = await pool.query(query, [
+    user.uid,
+    user.username,
+    user.email,
+    user.firebase_uid,
+    user.description,
+    user.name,
+    user.surnames,
+    user.location,
+  ]);
+  return result.rows[0];
+};
+
+export const updateConfiguration = async (uid, configuration) => {
+  const query = 'UPDATE app_user SET configuration = $2 WHERE uid = $1';
+  const result = await pool.query(query, [uid, configuration]);
+  return result.rowCount;
+};

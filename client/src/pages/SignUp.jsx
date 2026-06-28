@@ -1,5 +1,5 @@
 import { useActionState, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signUpAction } from '../actions/AuthActions';
 import { initialStateUseStateAction } from '../consts/consts';
 import { messages } from '../messages/messages';
@@ -9,9 +9,12 @@ import { FormInputField } from '../components/custom/form/FormInputField';
 import { FormAlert } from '../components/custom/form/FormAlert';
 import { FormPasswordInputField } from '../components/custom/form/FormPasswordInputField';
 import { consts } from '@hermyx/shared';
+import { GoogleSignInButton } from '../components/custom/GoogleSignInButton';
+import { UseGoogleAuth } from '../hooks/useGoogleAuth';
+import { Separator } from '@/components/ui/separator';
 
 export const SignUp = () => {
-  // Form action handling
+  // Form action, standard sign up
   const [state, signUpFormAction, isPending] = useActionState(
     signUpAction,
     initialStateUseStateAction,
@@ -24,7 +27,7 @@ export const SignUp = () => {
   }, [state.success, navigate]);
 
   return (
-    <main className='flex min-h-screen items-center justify-center p-4'>
+    <main className='flex min-h-[calc(100vh-60px)] items-center justify-center p-4'>
       <SignUpForm
         state={state}
         action={signUpFormAction}
@@ -52,11 +55,30 @@ const SignUpForm = ({ state, action, isPending }) => {
     const fieldName = e.target.name;
     setClearedFields((prev) => ({ ...prev, [fieldName]: true }));
   };
+
+  // Sign up with Google logic
+  const {
+    isPending: isGoogleAuthPending,
+    isError,
+    error,
+    mutate,
+  } = UseGoogleAuth();
+
   return (
     <div className='flex flex-col w-full max-w-155 gap-4'>
       <CardForm id='signUpForm' action={action}>
         <CardForm.Header>
           <CardForm.Title>{messages.SIGN_UP.FORM_TITLE}</CardForm.Title>
+          <CardForm.Description>
+            {`Already have an account? `}
+            <Link
+              to={'/login'}
+              className='text-black underline
+            '
+            >
+              {'Log in!'}
+            </Link>
+          </CardForm.Description>
         </CardForm.Header>
 
         <CardForm.Content legend='Application sign up form.'>
@@ -148,20 +170,33 @@ const SignUpForm = ({ state, action, isPending }) => {
         </CardForm.Content>
 
         <CardForm.Footer>
-          <Button
-            className='w-full'
-            id='sendSignUp'
-            type='submit'
-            form='signUpForm'
-            disabled={isPending}
-          >
-            {isPending ? 'Signing up...' : 'Sign up'}
-          </Button>
+          <div className='flex flex-col w-full gap-y-1'>
+            <Button
+              className='w-full'
+              id='sendSignUp'
+              type='submit'
+              form='signUpForm'
+              disabled={isPending}
+            >
+              {isPending ? 'Signing up...' : 'Sign up'}
+            </Button>
+            <div className='grid grid-cols-3 grid-rows-1 justify-items-center'>
+              <Separator className='my-4 w-fit'></Separator>
+              <span className='text-muted-foreground self-center-safe'>o</span>
+              <Separator className='my-4 w-fit'></Separator>
+            </div>
+            <GoogleSignInButton
+              disabled={isPending || isGoogleAuthPending}
+              onClick={mutate}
+              isPending={isGoogleAuthPending}
+              text='Sign up with Google'
+            ></GoogleSignInButton>
+          </div>
         </CardForm.Footer>
       </CardForm>
       {state.errors?.general && !isAlertClosed && (
         <FormAlert onClose={() => setIsAlertClosed(true)}>
-          {state.errors.general[0]}
+          {isError ? error : state.errors.general[0]}
         </FormAlert>
       )}
     </div>
