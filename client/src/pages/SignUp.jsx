@@ -10,7 +10,7 @@ import { FormAlert } from '../components/custom/form/FormAlert';
 import { FormPasswordInputField } from '../components/custom/form/FormPasswordInputField';
 import { consts } from '@hermyx/shared';
 import { GoogleSignInButton } from '../components/custom/GoogleSignInButton';
-import { UseGoogleAuth } from '../hooks/useGoogleAuth';
+import { UseGoogleAuth } from '../hooks/UseGoogleAuth';
 import { Separator } from '@/components/ui/separator';
 
 export const SignUp = () => {
